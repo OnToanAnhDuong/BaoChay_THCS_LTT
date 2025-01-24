@@ -268,7 +268,7 @@ button.delete:hover {
     </script>
 </head>
 <body>
-    <h1>ÔN LYỆN TOÁN LỚP 11  - THẦY GIÁO TÔN THANH CHƯƠNG</h1>
+    <h1>ÔN LYỆN TOÁN LỚP 12  - THẦY GIÁO TÔN THANH CHƯƠNG</h1>
     <div id="exerciseListContainer"></div>
     <div id="loginContainer">
         <input type="text" id="studentId" placeholder="Nhập mã học sinh">
@@ -1271,34 +1271,48 @@ document.getElementById('loginBtn').addEventListener('click', async () => {
         }
     }
 
-    // Update completedExercises and re-render exercise list when "Chấm Bài" is clicked
-    document.getElementById('submitBtn').addEventListener('click', () => {
-        if (currentProblem) {
-            if (!completedExercises.includes(currentProblem.index.toString())) {
-                completedExercises.push(currentProblem.index.toString());
-                alert(`Bạn đã hoàn thành bài tập số ${currentProblem.index}.`);
-                saveCompletedExercises(currentStudentId); // Lưu tiến trình cho học sinh hiện tại
-            } else {
-                const redo = confirm('Bài tập này đã được chấm. Bạn có muốn làm lại không?');
-                if (!redo) {
-                    alert('Mời bạn chọn bài tập khác.');
-                    return;
-                }
-            }
-
-            if (completedExercises.length === problems.length) {
-                alert('Bạn đã giải hết các bài tập. Xin chờ bài tập tiếp của thầy giáo giao cho bạn.');
-                return;
-            }
-        } else {
+    // Chấm bài: Sử dụng AI để chấm bài
+    async function gradeCurrentProblem() {
+        if (!currentProblem) {
             alert('Vui lòng chọn bài tập trước khi chấm bài.');
             return;
         }
 
-        renderExerciseList();
+        const studentFileInput = document.getElementById('studentImage');
+        if (!studentFileInput?.files?.length && !base64Image) {
+            alert('Vui lòng chọn hoặc chụp ảnh bài làm.');
+            return;
+        }
+
+        const imageToProcess = base64Image || (await getBase64(studentFileInput.files[0]));
+
+        try {
+            const resultElement = document.getElementById('result');
+            resultElement.textContent = 'Đang xử lý bài làm...';
+
+            // Gọi hàm chấm bài với API AI
+            const { studentAnswer, feedback, score } = await gradeWithGemini(imageToProcess, currentProblem.problem, currentStudentId);
+
+            resultElement.innerHTML = `<div>Bài làm của học sinh: ${studentAnswer}</div><div>Nhận xét: ${feedback}</div><div>Điểm: ${score}/10</div>`;
+
+            if (!completedExercises.includes(currentProblem.index.toString())) {
+                completedExercises.push(currentProblem.index.toString());
+                saveCompletedExercises(currentStudentId);
+            }
+
+            renderExerciseList();
+        } catch (error) {
+            console.error('Lỗi khi chấm bài:', error);
+            alert('Đã xảy ra lỗi khi chấm bài. Vui lòng thử lại.');
+        }
+    }
+
+    // Xử lý sự kiện nút "Chấm bài"
+    document.getElementById('submitBtn').addEventListener('click', () => {
+        gradeCurrentProblem();
     });
 
-    // Initial rendering after fetching problems
+    // Xử lý khi đăng nhập
     document.getElementById('loginBtn').addEventListener('click', async () => {
         const studentIdInput = document.getElementById('studentId');
         if (studentIdInput && studentIdInput.value.trim()) {
