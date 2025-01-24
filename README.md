@@ -813,12 +813,18 @@ async function generateSimilarProblem(originalProblem) {
                         console.error(`Không tìm thấy dữ liệu cho mã học sinh: ${currentStudentId}`);
                         return;
                     }
-		   // Kiểm tra nếu bài tập chưa được đánh dấu hoàn thành
+		  // Kiểm tra nếu bài tập chưa được đánh dấu hoàn thành
     if (!completedProblems.includes(currentProblemIndex)) {
         completedProblems.push(currentProblemIndex); // Thêm vào danh sách đã làm
         alert('Bài tập đã được chấm!');
     }
 
+    // Kiểm tra nếu tất cả bài đã làm xong
+    if (completedProblems.length === problems.length) {
+        alert('Bạn đã hoàn thành công việc thầy giao. Chờ bài tập mới nhé!');
+    }
+
+    renderProblemsList(problems, completedProblems); // Cập nhật danh sách
   
                     // Cập nhật số bài và điểm trung bình
                     const completedExercises = studentData.c[2]?.v || 0; // Cột C: Số bài đã làm
