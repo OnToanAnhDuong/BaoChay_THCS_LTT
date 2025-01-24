@@ -327,7 +327,6 @@ button.delete:hover {
         const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?sheet=${SHEET_NAME}&tq=&tqx=out:json`;
 
         const API_KEYS = ['AIzaSyCzh6doVzV7Dbmbz60B9pNUQIel2N6KEcI', 'AIzaSyBVQcUrVTtwKeAAsFR8ENM8-kgZl8CsUM0', 'AIzaSyCmY4FdhZ4qSN6HhBtldgQgSNbDlZ4J1ug', 'AIzaSyAkX3rMYxN_-aO95QKMPy-OLIV62esaANU', 'AIzaSyDtmacgYKn1PBgCVWkReF9Kyn6vC4DKZmg', 'AIzaSyAusgvzZkUPT9lHoB7vzZW_frx-Z0xIxU8', 'AIzaSyBBNxoJh9UZXbc4shgRc7nUiJKya3JR2eI', 'AIzaSyAru8K7uUTD85FOCmrNESQmQYh-gfFCOZ8', 'AIzaSyAkDbRl7iBYWhc00KZ9dZL1_l0cobcC0ak', 'AIzaSyAJ9DpLy4uLfbFoyh7IhW9N0uk9YkBEUY4'];
-
         
         let currentKeyIndex = 0;
         let problems = [];
@@ -389,8 +388,6 @@ button.delete:hover {
     }
 }
 
-
-
         function parseGoogleSheetData(jsonData) {
     const data = jsonData.table.rows;
     return data.map(row => ({
@@ -449,7 +446,6 @@ function checkCameraAccess() {
         .catch(error => console.error('Lỗi khi kiểm tra thiết bị camera:', error));
 }
 
-
         // Hàm cập nhật số bài đã làm và điểm trung bình
         function updateProgress(newScore) {
             completedProblems++;
@@ -463,19 +459,7 @@ function checkCameraAccess() {
         document.getElementById('submitBtn').addEventListener('click', function() {
             // Giả sử điểm của bài hiện tại đã được tính là currentProblemScore
             updateProgress(currentProblemScore);
-        });
-
-        // Xử lý khi học sinh đăng nhập
-        document.getElementById('loginBtn').addEventListener('click', function() {
-            const studentId = document.getElementById('studentId').value;
-            if (studentId) {
-                currentStudentId = studentId;
-                document.getElementById('loginContainer').style.display = 'none';
-                document.getElementById('mainContent').style.display = 'block';
-            } else {
-                alert('Vui lòng nhập mã học sinh');
-            }
-        });
+        });    
 
         // Lấy bài toán ngẫu nhiên
         async function fetchProblems() {
