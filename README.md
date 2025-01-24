@@ -1222,20 +1222,21 @@ document.getElementById('loginBtn').addEventListener('click', async () => {
     </script>
     
 <script>
-    
     // Tải danh sách bài tập đã làm từ localStorage khi đăng nhập
-    function loadCompletedExercises() {
-        const savedData = localStorage.getItem('completedExercises');
+    function loadCompletedExercises(studentId) {
+        const savedData = localStorage.getItem(`completedExercises_${studentId}`);
         if (savedData) {
             completedExercises = JSON.parse(savedData);
-            console.log('Đã tải tiến trình:', completedExercises);
+            console.log(`Đã tải tiến trình của học sinh ${studentId}:`, completedExercises);
+        } else {
+            completedExercises = []; // Nếu không có dữ liệu, khởi tạo danh sách rỗng
         }
     }
 
     // Lưu danh sách bài tập đã làm vào localStorage
-    function saveCompletedExercises() {
-        localStorage.setItem('completedExercises', JSON.stringify(completedExercises));
-        console.log('Đã lưu tiến trình:', completedExercises);
+    function saveCompletedExercises(studentId) {
+        localStorage.setItem(`completedExercises_${studentId}`, JSON.stringify(completedExercises));
+        console.log(`Đã lưu tiến trình của học sinh ${studentId}:`, completedExercises);
     }
 
     function renderExerciseList() {
@@ -1295,7 +1296,7 @@ document.getElementById('loginBtn').addEventListener('click', async () => {
             if (!completedExercises.includes(currentProblem.index.toString())) {
                 completedExercises.push(currentProblem.index.toString());
                 alert(`Bạn đã hoàn thành bài tập số ${currentProblem.index}.`);
-                saveCompletedExercises(); // Lưu tiến trình
+                saveCompletedExercises(currentStudentId); // Lưu tiến trình cho học sinh hiện tại
             } else {
                 const redo = confirm('Bài tập này đã được chấm. Bạn có muốn làm lại không?');
                 if (!redo) {
@@ -1317,12 +1318,16 @@ document.getElementById('loginBtn').addEventListener('click', async () => {
     });
 
     // Initial rendering after fetching problems
-    fetchProblems().then(() => {
-        loadCompletedExercises(); // Tải tiến trình trước khi hiển thị danh sách
-        renderExerciseList();
+    document.getElementById('loginBtn').addEventListener('click', () => {
+        const studentIdInput = document.getElementById('studentId');
+        if (studentIdInput && studentIdInput.value.trim()) {
+            currentStudentId = studentIdInput.value.trim(); // Lấy ID học sinh
+            loadCompletedExercises(currentStudentId); // Tải tiến trình của học sinh hiện tại
+            renderExerciseList();
+        } else {
+            alert('Vui lòng nhập mã học sinh trước khi đăng nhập.');
+        }
     });
 </script>
-
-
 </body>
 </html>
