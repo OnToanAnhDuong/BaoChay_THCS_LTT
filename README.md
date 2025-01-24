@@ -269,7 +269,7 @@ button.delete:hover {
     </script>
 </head>
 <body>
-    <h1>ÔN LYỆN TOÁN LỚP 7  - THẦY GIÁO TÔN THANH CHƯƠNG</h1>
+    <h1>ÔN LYỆN TOÁN LỚP 5  - THẦY GIÁO TÔN THANH CHƯƠNG</h1>
     <div id="exerciseListContainer"></div>
     <div id="loginContainer">
         <input type="text" id="studentId" placeholder="Nhập mã học sinh">
@@ -1221,7 +1221,40 @@ document.getElementById('loginBtn').addEventListener('click', async () => {
 
     </script>
 <script>
-    // Hàm chấm bài với bổ sung tính năng lưu lịch sử
+    let currentProblem = null;
+    let problems = [];
+    let completedExercises = {}; // Lưu lịch sử bài làm theo từng ID
+    let currentStudentId = null;
+    const SHEET_ID = '175acnaYklfdCc_UJ7B3LJgNaUJpfrIENxn6LN76QADM';
+    const SHEET_NAME = 'Toan6';
+    const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?sheet=${SHEET_NAME}&tq=&tqx=out:json`;
+
+    async function fetchProblems() {
+        try {
+            const response = await fetch(SHEET_URL);
+            const text = await response.text();
+            const jsonData = JSON.parse(text.match(/google\.visualization\.Query\.setResponse\((.*)\)/)[1]);
+            problems = jsonData.table.rows.map(row => ({
+                index: row.c[0]?.v?.toString() || '',
+                problem: row.c[1]?.v || ''
+            })).filter(item => item.index && item.problem);
+        } catch (error) {
+            console.error('Lỗi khi tải bài tập:', error);
+        }
+    }
+
+    function loadCompletedExercises(studentId) {
+        const savedData = localStorage.getItem('completedExercises');
+        completedExercises = savedData ? JSON.parse(savedData) : {};
+        if (!completedExercises[studentId]) {
+            completedExercises[studentId] = [];
+        }
+    }
+
+    function saveCompletedExercises(studentId) {
+        localStorage.setItem('completedExercises', JSON.stringify(completedExercises));
+    }
+
     async function gradeCurrentProblem() {
         if (!currentProblem) {
             alert('Vui lòng chọn bài tập trước khi chấm bài.');
@@ -1229,26 +1262,27 @@ document.getElementById('loginBtn').addEventListener('click', async () => {
         }
 
         const studentFileInput = document.getElementById('studentImage');
-        if (!studentFileInput?.files?.length && !base64Image) {
-            alert('Vui lòng chọn hoặc chụp ảnh bài làm.');
+        const imageToProcess = studentFileInput?.files?.length
+            ? await getBase64(studentFileInput.files[0])
+            : '';
+        if (!imageToProcess) {
+            alert('Vui lòng tải ảnh bài làm.');
             return;
         }
-
-        const imageToProcess = base64Image || (await getBase64(studentFileInput.files[0]));
 
         try {
             const resultElement = document.getElementById('result');
             resultElement.textContent = 'Đang xử lý bài làm...';
 
-            // Gọi API chấm bài bằng AI
+            // Gọi API chấm bài bằng AI (giữ nguyên logic gốc)
             const { studentAnswer, feedback, score } = await gradeWithGemini(imageToProcess, currentProblem.problem, currentStudentId);
 
             resultElement.innerHTML = `<div>Bài làm của học sinh: ${studentAnswer}</div><div>Nhận xét: ${feedback}</div><div>Điểm: ${score}/10</div>`;
 
             // Kiểm tra và cập nhật trạng thái bài tập đã làm
-            if (!completedExercises.includes(currentProblem.index.toString())) {
-                completedExercises.push(currentProblem.index.toString());
-                saveCompletedExercises(currentStudentId); // Lưu tiến trình vào localStorage
+            if (!completedExercises[currentStudentId].includes(currentProblem.index)) {
+                completedExercises[currentStudentId].push(currentProblem.index);
+                saveCompletedExercises(currentStudentId);
             }
 
             renderExerciseList(); // Cập nhật danh sách bài tập trên giao diện
@@ -1258,7 +1292,6 @@ document.getElementById('loginBtn').addEventListener('click', async () => {
         }
     }
 
-    // Hàm hiển thị danh sách bài tập
     function renderExerciseList() {
         const exerciseListContainer = document.getElementById('exerciseListContainer');
         exerciseListContainer.innerHTML = ''; // Xóa nội dung cũ
@@ -1284,7 +1317,7 @@ document.getElementById('loginBtn').addEventListener('click', async () => {
             exerciseBox.style.cursor = 'pointer';
             exerciseBox.style.fontWeight = 'bold';
 
-            const isCompleted = completedExercises.includes(problem.index.toString());
+            const isCompleted = completedExercises[currentStudentId]?.includes(problem.index);
             exerciseBox.style.backgroundColor = isCompleted ? '#5cb85c' : '#f0ad4e';
             exerciseBox.style.color = isCompleted ? 'white' : 'black';
 
@@ -1306,32 +1339,6 @@ document.getElementById('loginBtn').addEventListener('click', async () => {
         exerciseListContainer.appendChild(gridContainer);
     }
 
-    // Hàm tải danh sách bài tập từ Google Sheet
-    async function fetchProblems() {
-        try {
-            const response = await fetch(SHEET_URL);
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            const text = await response.text();
-            const jsonData = JSON.parse(text.match(/google\.visualization\.Query\.setResponse\((.*)\)/)[1]);
-
-            problems = jsonData.table.rows.map(row => ({
-                index: row.c[0]?.v?.toString() || '',
-                problem: row.c[1]?.v || ''
-            })).filter(item => item.index && item.problem);
-
-            console.log("Danh sách bài tập đã tải:", problems);
-        } catch (error) {
-            console.error("Lỗi khi tải bài tập từ Google Sheet:", error);
-            problems = [];
-        }
-    }
-
-    // Gắn sự kiện vào nút chấm bài
-    document.getElementById('submitBtn').addEventListener('click', gradeCurrentProblem);
-
-    // Gắn sự kiện đăng nhập
     document.getElementById('loginBtn').addEventListener('click', async () => {
         const studentIdInput = document.getElementById('studentId');
         if (studentIdInput && studentIdInput.value.trim()) {
@@ -1343,6 +1350,17 @@ document.getElementById('loginBtn').addEventListener('click', async () => {
             alert('Vui lòng nhập mã học sinh trước khi đăng nhập.');
         }
     });
+
+    document.getElementById('submitBtn').addEventListener('click', gradeCurrentProblem);
+
+    function getBase64(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = () => resolve(reader.result.split(',')[1]);
+            reader.onerror = error => reject(error);
+        });
+    }
 </script>
 
 </body>
