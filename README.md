@@ -269,7 +269,7 @@ button.delete:hover {
     </script>
 </head>
 <body>
-    <h1>ÔN LYỆN TOÁN LỚP 7  - THẦY GIÁO TÔN THANH CHƯƠNG</h1>
+    <h1>ÔN LYỆN TOÁN LỚP 6  - THẦY GIÁO TÔN THANH CHƯƠNG</h1>
     <div id="exerciseListContainer"></div>
     <div id="loginContainer">
         <input type="text" id="studentId" placeholder="Nhập mã học sinh">
@@ -1221,135 +1221,64 @@ document.getElementById('loginBtn').addEventListener('click', async () => {
 
     </script>
 <script>
-    // Tải danh sách bài tập đã làm từ localStorage khi đăng nhập
-    function loadCompletedExercises(studentId) {
-        const savedData = localStorage.getItem(`completedExercises_${studentId}`);
-        if (savedData) {
-            completedExercises = JSON.parse(savedData);
-            console.log(`Đã tải tiến trình của học sinh ${studentId}:`, completedExercises);
-        } else {
-            completedExercises = []; // Nếu không có dữ liệu, khởi tạo danh sách rỗng
-        }
-    }
-
-    // Lưu danh sách bài tập đã làm vào localStorage
-    function saveCompletedExercises(studentId) {
-        localStorage.setItem(`completedExercises_${studentId}`, JSON.stringify(completedExercises));
-        console.log(`Đã lưu tiến trình của học sinh ${studentId}:`, completedExercises);
-    }
-
-    async function fetchProblems() {
-        try {
-            const response = await fetch(SHEET_URL);
-            const text = await response.text();
-            const jsonData = JSON.parse(text.match(/google\.visualization\.Query\.setResponse\((.*)\)/)[1]);
-            problems = jsonData.table.rows.map(row => ({
-                index: row.c[0]?.v?.toString() || '',
-                problem: row.c[1]?.v || ''
-            })).filter(item => item.index && item.problem);
-
-            console.log("Danh sách bài tập đã tải từ Google Sheet:", problems);
-        } catch (error) {
-            console.error("Lỗi khi tải bài tập từ Google Sheet:", error);
-        }
-    }
-
-    function renderExerciseList() {
-        const exerciseListContainer = document.getElementById('exerciseListContainer');
-        exerciseListContainer.innerHTML = ''; // Clear the container
-
-        if (!problems.length) {
-            exerciseListContainer.textContent = 'Danh sách bài tập chưa được tải.';
-            return;
-        }
-
-        // Create a grid to display exercises
-        const gridContainer = document.createElement('div');
-        gridContainer.style.display = 'grid';
-        gridContainer.style.gridTemplateColumns = 'repeat(auto-fit, minmax(50px, 1fr))';
-        gridContainer.style.gap = '10px';
-        gridContainer.style.marginTop = '20px';
-
-        // Render each exercise as a square
-        problems.forEach(problem => {
-            const exerciseBox = document.createElement('div');
-            exerciseBox.textContent = problem.index;
-            exerciseBox.style.border = '1px solid #ddd';
-            exerciseBox.style.borderRadius = '5px';
-            exerciseBox.style.textAlign = 'center';
-            exerciseBox.style.padding = '10px';
-            exerciseBox.style.cursor = 'pointer';
-            exerciseBox.style.fontWeight = 'bold';
-
-            // Set background color based on completion status
-            const isCompleted = completedExercises.includes(problem.index.toString());
-            exerciseBox.style.backgroundColor = isCompleted ? '#5cb85c' : '#f0ad4e'; // Green for done, yellow for not done
-            exerciseBox.style.color = isCompleted ? 'white' : 'black';
-
-            // Add click event to select an exercise
-            exerciseBox.addEventListener('click', () => {
-                currentProblem = problem; // Cập nhật bài tập hiện tại
-                if (isCompleted) {
-                    const redo = confirm('Bài tập này đã được chấm. Bạn có muốn làm lại không?');
-                    if (!redo) {
-                        alert('Mời bạn chọn bài tập khác.');
-                        return;
-                    }
-                }
-                displayProblemByIndex(problem.index);
-            });
-
-            gridContainer.appendChild(exerciseBox);
-        });
-
-        exerciseListContainer.appendChild(gridContainer);
-    }
-
-    function displayProblemByIndex(index) {
-        const problemContainer = document.getElementById('problemContainer');
-        const selectedProblem = problems.find(problem => problem.index === index);
-
-        if (selectedProblem) {
-            problemContainer.innerHTML = `<div><strong>Bài tập ${selectedProblem.index}:</strong> ${selectedProblem.problem}</div>`;
-        } else {
-            problemContainer.innerHTML = '<div>Không tìm thấy bài tập.</div>';
-        }
-    }
-
-    // Chấm bài: Hiển thị bài làm, chấm điểm, và nhận xét
-    function gradeCurrentProblem() {
+    async function gradeCurrentProblem() {
         if (!currentProblem) {
             alert('Vui lòng chọn bài tập trước khi chấm bài.');
             return;
         }
 
-        // Giả lập bài làm và kết quả chấm
-        const studentAnswer = prompt('Nhập bài làm của bạn:');
-        if (!studentAnswer) {
-            alert('Bạn chưa nhập bài làm.');
+        const studentFileInput = document.getElementById('studentImage');
+        if (!studentFileInput?.files?.length && !base64Image) {
+            alert('Vui lòng chọn hoặc chụp ảnh bài làm.');
             return;
         }
 
-        // Ví dụ chấm điểm: Kiểm tra độ dài bài làm
-        const score = studentAnswer.length > 10 ? 10 : 5; // Điểm tối đa là 10
-        const feedback = score === 10 ? 'Bài làm tốt, đầy đủ.' : 'Bài làm chưa đủ chi tiết, cần cải thiện.';
-
-        alert(`Điểm của bạn: ${score}/10\nNhận xét: ${feedback}`);
-
-        if (!completedExercises.includes(currentProblem.index.toString())) {
-            completedExercises.push(currentProblem.index.toString());
-            saveCompletedExercises(currentStudentId); // Lưu tiến trình cho học sinh hiện tại
+        // Kiểm tra nếu bài tập đã được chấm
+        const isCompleted = completedExercises.includes(currentProblem.index.toString());
+        if (isCompleted) {
+            const redo = confirm('Bài tập này đã được chấm. Bạn có muốn làm lại không?');
+            if (!redo) {
+                alert('Mời bạn chọn bài tập khác.');
+                return;
+            }
         }
 
-        renderExerciseList();
+        const imageToProcess = base64Image || (await getBase64(studentFileInput.files[0]));
+
+        try {
+            const resultElement = document.getElementById('result');
+            resultElement.textContent = 'Đang xử lý bài làm...';
+
+            // Gọi hàm chấm bài gốc với AI
+            const { studentAnswer, feedback, score } = await gradeWithGemini(imageToProcess, currentProblem.problem, currentStudentId);
+
+            // Hiển thị kết quả chấm bài
+            resultElement.innerHTML = `
+                <div><strong>Bài làm của học sinh:</strong> ${studentAnswer}</div>
+                <div><strong>Nhận xét:</strong> ${feedback}</div>
+                <div><strong>Điểm:</strong> ${score}/10</div>
+            `;
+
+            // Lưu tiến trình nếu bài tập chưa được đánh dấu hoàn thành
+            if (!isCompleted) {
+                completedExercises.push(currentProblem.index.toString());
+                saveCompletedExercises(currentStudentId);
+            }
+
+            // Cập nhật danh sách bài tập
+            renderExerciseList();
+        } catch (error) {
+            console.error('Lỗi khi chấm bài:', error);
+            alert('Đã xảy ra lỗi khi chấm bài. Vui lòng thử lại.');
+        }
     }
 
-    // Update completedExercises and re-render exercise list when "Chấm Bài" is clicked
+    // Xử lý sự kiện nút "Chấm bài"
     document.getElementById('submitBtn').addEventListener('click', () => {
         gradeCurrentProblem();
     });
 
-    // Initial rendering after fetching problems
+    // Xử lý khi đăng nhập
     document.getElementById('loginBtn').addEventListener('click', async () => {
         const studentIdInput = document.getElementById('studentId');
         if (studentIdInput && studentIdInput.value.trim()) {
@@ -1362,6 +1291,5 @@ document.getElementById('loginBtn').addEventListener('click', async () => {
         }
     });
 </script>
-
 </body>
 </html>
