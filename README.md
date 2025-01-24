@@ -1239,6 +1239,20 @@ document.getElementById('loginBtn').addEventListener('click', async () => {
         console.log(`Đã lưu tiến trình của học sinh ${studentId}:`, completedExercises);
     }
 
+    async function fetchProblems() {
+        try {
+            // Tải dữ liệu từ nguồn của bạn (vd: Google Sheets hoặc API)
+            problems = [
+                { index: "1", problem: "Bài tập 1" },
+                { index: "2", problem: "Bài tập 2" },
+                { index: "3", problem: "Bài tập 3" },
+            ];
+            console.log("Danh sách bài tập đã tải:", problems);
+        } catch (error) {
+            console.error("Lỗi khi tải bài tập:", error);
+        }
+    }
+
     function renderExerciseList() {
         const exerciseListContainer = document.getElementById('exerciseListContainer');
         exerciseListContainer.innerHTML = ''; // Clear the container
@@ -1318,16 +1332,18 @@ document.getElementById('loginBtn').addEventListener('click', async () => {
     });
 
     // Initial rendering after fetching problems
-    document.getElementById('loginBtn').addEventListener('click', () => {
+    document.getElementById('loginBtn').addEventListener('click', async () => {
         const studentIdInput = document.getElementById('studentId');
         if (studentIdInput && studentIdInput.value.trim()) {
             currentStudentId = studentIdInput.value.trim(); // Lấy ID học sinh
             loadCompletedExercises(currentStudentId); // Tải tiến trình của học sinh hiện tại
-            renderExerciseList();
+            await fetchProblems(); // Tải danh sách bài tập
+            renderExerciseList(); // Hiển thị danh sách bài tập
         } else {
             alert('Vui lòng nhập mã học sinh trước khi đăng nhập.');
         }
     });
 </script>
+
 </body>
 </html>
