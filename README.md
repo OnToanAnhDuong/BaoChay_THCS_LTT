@@ -268,7 +268,7 @@ button.delete:hover {
     </script>
 </head>
 <body>
-    <h1>ÔN LYỆN TOÁN LỚP 10  - THẦY GIÁO TÔN THANH CHƯƠNG</h1>
+    <h1>ÔN LYỆN TOÁN LỚP 11  - THẦY GIÁO TÔN THANH CHƯƠNG</h1>
     <div id="exerciseListContainer"></div>
     <div id="loginContainer">
         <input type="text" id="studentId" placeholder="Nhập mã học sinh">
@@ -1193,6 +1193,22 @@ document.getElementById('loginBtn').addEventListener('click', async () => {
         console.log(`Đã lưu tiến trình của học sinh ${studentId}:`, completedExercises);
     }
 
+    async function fetchProblems() {
+        try {
+            const response = await fetch(SHEET_URL);
+            const text = await response.text();
+            const jsonData = JSON.parse(text.match(/google\.visualization\.Query\.setResponse\((.*)\)/)[1]);
+            problems = jsonData.table.rows.map(row => ({
+                index: row.c[0]?.v?.toString() || '',
+                problem: row.c[1]?.v || ''
+            })).filter(item => item.index && item.problem);
+
+            console.log("Danh sách bài tập đã tải từ Google Sheet:", problems);
+        } catch (error) {
+            console.error("Lỗi khi tải bài tập từ Google Sheet:", error);
+        }
+    }
+
     function renderExerciseList() {
         const exerciseListContainer = document.getElementById('exerciseListContainer');
         exerciseListContainer.innerHTML = ''; // Clear the container
@@ -1244,6 +1260,17 @@ document.getElementById('loginBtn').addEventListener('click', async () => {
         exerciseListContainer.appendChild(gridContainer);
     }
 
+    function displayProblemByIndex(index) {
+        const problemContainer = document.getElementById('problemContainer');
+        const selectedProblem = problems.find(problem => problem.index === index);
+
+        if (selectedProblem) {
+            problemContainer.innerHTML = `<div><strong>Bài tập ${selectedProblem.index}:</strong> ${selectedProblem.problem}</div>`;
+        } else {
+            problemContainer.innerHTML = '<div>Không tìm thấy bài tập.</div>';
+        }
+    }
+
     // Update completedExercises and re-render exercise list when "Chấm Bài" is clicked
     document.getElementById('submitBtn').addEventListener('click', () => {
         if (currentProblem) {
@@ -1272,16 +1299,18 @@ document.getElementById('loginBtn').addEventListener('click', async () => {
     });
 
     // Initial rendering after fetching problems
-    document.getElementById('loginBtn').addEventListener('click', () => {
+    document.getElementById('loginBtn').addEventListener('click', async () => {
         const studentIdInput = document.getElementById('studentId');
         if (studentIdInput && studentIdInput.value.trim()) {
             currentStudentId = studentIdInput.value.trim(); // Lấy ID học sinh
             loadCompletedExercises(currentStudentId); // Tải tiến trình của học sinh hiện tại
-            renderExerciseList();
+            await fetchProblems(); // Tải danh sách bài tập
+            renderExerciseList(); // Hiển thị danh sách bài tập
         } else {
             alert('Vui lòng nhập mã học sinh trước khi đăng nhập.');
         }
     });
 </script>
+
 </body>
 </html>
