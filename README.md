@@ -269,7 +269,7 @@ button.delete:hover {
     </script>
 </head>
 <body>
-    <h1>ÔN LYỆN TOÁN LỚP 6  - THẦY GIÁO TÔN THANH CHƯƠNG</h1>
+    <h1>ÔN LYỆN TOÁN LỚP 7  - THẦY GIÁO TÔN THANH CHƯƠNG</h1>
     <div id="exerciseListContainer"></div>
     <div id="loginContainer">
         <input type="text" id="studentId" placeholder="Nhập mã học sinh">
@@ -1241,15 +1241,17 @@ document.getElementById('loginBtn').addEventListener('click', async () => {
 
     async function fetchProblems() {
         try {
-            // Tải dữ liệu từ nguồn của bạn (vd: Google Sheets hoặc API)
-            problems = [
-                { index: "1", problem: "Giải phương trình bậc nhất: 2x + 3 = 7" },
-                { index: "2", problem: "Tính giá trị của biểu thức: 5 * (3 + 2) - 8" },
-                { index: "3", problem: "Tìm x biết: x^2 - 4x + 4 = 0" },
-            ];
-            console.log("Danh sách bài tập đã tải:", problems);
+            const response = await fetch(SHEET_URL);
+            const text = await response.text();
+            const jsonData = JSON.parse(text.match(/google\.visualization\.Query\.setResponse\((.*)\)/)[1]);
+            problems = jsonData.table.rows.map(row => ({
+                index: row.c[0]?.v?.toString() || '',
+                problem: row.c[1]?.v || ''
+            })).filter(item => item.index && item.problem);
+
+            console.log("Danh sách bài tập đã tải từ Google Sheet:", problems);
         } catch (error) {
-            console.error("Lỗi khi tải bài tập:", error);
+            console.error("Lỗi khi tải bài tập từ Google Sheet:", error);
         }
     }
 
