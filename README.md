@@ -1,4 +1,3 @@
-
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
@@ -250,35 +249,6 @@ button.delete {
 button.delete:hover {
     background-color: #c82333;
 }
-#exerciseListContainer {
-    text-align: center;
-    margin-top: 20px;
-}
-
-#exerciseGrid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-    gap: 10px;
-    margin-top: 10px;
-}
-
-.exercise-item {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    border-radius: 5px;
-    border: 1px solid #ddd;
-    padding: 10px;
-    font-size: 18px;
-    cursor: pointer;
-    background-color: red; /* Mặc định bài chưa làm */
-    color: white;
-    font-weight: bold;
-}
-
-.exercise-item.done {
-    background-color: green; /* Đổi thành màu xanh khi bài đã làm */
-}
 </style>
 
     <!-- Thêm MathJax -->
@@ -298,11 +268,8 @@ button.delete:hover {
     </script>
 </head>
 <body>
-    <h1>ÔN LYỆN TOÁN LỚP 10  - THẦY GIÁO TÔN THANH CHƯƠNG</h1>
-    <div id="exerciseListContainer">
-    <h2>Danh sách bài tập</h2>
-    <div id="exerciseGrid"></div>
-</div>
+    <h1>ÔN LYỆN TOÁN LỚP 6  - THẦY GIÁO TÔN THANH CHƯƠNG</h1>
+    
     <div id="loginContainer">
         <input type="text" id="studentId" placeholder="Nhập mã học sinh">
         <button id="loginBtn">Đăng nhập</button>
@@ -373,11 +340,6 @@ button.delete:hover {
         let currentHint = '';
         let studentName = '';
 	let currentProblemIndex = 0; // Bắt đầu từ bài đầu tiên
-     // Danh sách bài tập với trạng thái mặc định "chưa làm"
-let exercises = Array.from({ length: 10 }, (_, i) => ({
-    id: i + 1,
-    done: false // Mặc định bài tập chưa được làm
-}));
         function getNextApiKey() {
             const key = API_KEYS[currentKeyIndex];
             currentKeyIndex = (currentKeyIndex + 1) % API_KEYS.length;
@@ -887,8 +849,6 @@ function checkCameraAccess() {
         console.error('Lỗi:', error);
         document.getElementById('result').innerText = `Đã xảy ra lỗi: ${error.message}. Vui lòng thử lại sau.`;
     }
- const currentProblemIndex = currentProblemIndex || 1; // Lấy bài tập hiện tại
-    markExerciseAsDone(currentProblemIndex);
 });
 
         document.getElementById('randomProblemBtn').addEventListener('click', () => {
@@ -914,7 +874,6 @@ function checkCameraAccess() {
                     document.getElementById('randomProblemBtn').textContent = `Lấy đề bài ngẫu nhiên (${currentStudentId})`;
                     await fetchProblems();
                     await updateProgress(0);
-                    renderExerciseList(); // Hiển thị danh sách bài tập
                 } else {
                     alert('Mã học sinh không hợp lệ. Vui lòng thử lại.');
                 }
@@ -1115,61 +1074,8 @@ document.getElementById('loginBtn').addEventListener('click', async () => {
         console.error('Lỗi khi tải dữ liệu:', error);
         alert(`Không thể tải tiến độ học tập. Chi tiết lỗi: ${error.message}`);
     }
-     renderExerciseList(); // Hiển thị danh sách bài tập
 });
-function renderExerciseList() {
-    const grid = document.getElementById('exerciseGrid');
-    grid.innerHTML = ''; // Xóa danh sách cũ trước khi vẽ lại
 
-    exercises.forEach(exercise => {
-        const div = document.createElement('div');
-        div.textContent = `Bài ${exercise.id}`;
-        div.className = 'exercise-item';
-        if (exercise.done) {
-            div.classList.add('done'); // Thêm màu xanh nếu bài đã làm
-        }
-        div.addEventListener('click', () => handleExerciseClick(exercise));
-        grid.appendChild(div);
-    });
-}
-function handleExerciseClick(exercise) {
-    if (exercise.done) {
-        // Nếu bài tập đã làm, hỏi học sinh có muốn làm lại không
-        if (confirm(`Bài tập này bạn đã làm. Bạn có muốn làm lại không?`)) {
-            startExercise(exercise.id);
-        } else {
-            alert('Mời bạn chọn bài mới.');
-        }
-    } else {
-        // Nếu bài chưa làm, bắt đầu bài tập
-        startExercise(exercise.id);
-    }
-}
-function handleExerciseClick(exercise) {
-    if (exercise.done) {
-        // Nếu bài tập đã làm, hỏi học sinh có muốn làm lại không
-        if (confirm(`Bài tập này bạn đã làm. Bạn có muốn làm lại không?`)) {
-            startExercise(exercise.id);
-        } else {
-            alert('Mời bạn chọn bài mới.');
-        }
-    } else {
-        // Nếu bài chưa làm, bắt đầu bài tập
-        startExercise(exercise.id);
-    }
-}
-function markExerciseAsDone(id) {
-    const exercise = exercises.find(e => e.id === id);
-    if (exercise) {
-        exercise.done = true; // Đánh dấu bài tập là đã làm
-        renderExerciseList(); // Cập nhật giao diện
-
-        // Kiểm tra nếu tất cả bài tập đã hoàn thành
-        if (exercises.every(e => e.done)) {
-            alert('Bạn đã hoàn thiện công việc thầy giao cho. Bạn chờ bài tập giao mới nhé!');
-        }
-    }
-}
 });
 
             // Các đoạn mã ngăn chặn xem mã nguồn và bảo vệ nội dung
