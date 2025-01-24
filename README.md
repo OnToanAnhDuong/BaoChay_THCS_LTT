@@ -249,31 +249,6 @@ button.delete {
 button.delete:hover {
     background-color: #c82333;
 }
-.problem-box {
-    width: 80px;
-    height: 80px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 16px;
-    font-weight: bold;
-    color: white;
-    border-radius: 5px;
-    cursor: pointer;
-    text-align: center;
-}
-
-.problem-box.red {
-    background-color: #ff4d4d; /* Màu đỏ cho bài chưa làm */
-}
-
-.problem-box.green {
-    background-color: #4caf50; /* Màu xanh cho bài đã làm */
-}
-
-.problem-box:hover {
-    opacity: 0.9; /* Hiệu ứng hover */
-}
 </style>
 
     <!-- Thêm MathJax -->
@@ -293,7 +268,7 @@ button.delete:hover {
     </script>
 </head>
 <body>
-    <h1>ÔN LYỆN TOÁN LỚP 3  - THẦY GIÁO TÔN THANH CHƯƠNG</h1>
+    <h1>ÔN LYỆN TOÁN LỚP 11  - THẦY GIÁO TÔN THANH CHƯƠNG</h1>
     <div id="problemList" style="display: none; margin-top: 20px;">
     <h3>Danh sách bài tập</h3>
     <div id="problemsContainer" style="display: flex; flex-wrap: wrap; gap: 10px;"></div>
@@ -359,14 +334,14 @@ button.delete:hover {
         let currentKeyIndex = 0;
         let problems = [];
         let currentProblem = null;
-	let totalScore = 0;  // Khai báo tổng điểm
+	let completedProblems = 0;  // Khai báo số bài đã giải
+        let totalScore = 0;  // Khai báo tổng điểm
         let currentProblemScore = 0; // Điểm của bài hiện tại
 	let base64Image = ''; // Đặt ở đầu script để có phạm vi toàn cục
         let currentStudentId = null;
         let currentHint = '';
         let studentName = '';
 	let currentProblemIndex = 0; // Bắt đầu từ bài đầu tiên
- 	let completedProblems = []; // Danh sách bài đã làm, bắt buộc phải là một mảng
         function getNextApiKey() {
             const key = API_KEYS[currentKeyIndex];
             currentKeyIndex = (currentKeyIndex + 1) % API_KEYS.length;
@@ -813,19 +788,7 @@ async function generateSimilarProblem(originalProblem) {
                         console.error(`Không tìm thấy dữ liệu cho mã học sinh: ${currentStudentId}`);
                         return;
                     }
-		  // Kiểm tra nếu bài tập chưa được đánh dấu hoàn thành
-    if (!completedProblems.includes(currentProblemIndex)) {
-        completedProblems.push(currentProblemIndex); // Thêm vào danh sách đã làm
-        alert('Bài tập đã được chấm!');
-    }
 
-    // Kiểm tra nếu tất cả bài đã làm xong
-    if (completedProblems.length === problems.length) {
-        alert('Bạn đã hoàn thành công việc thầy giao. Chờ bài tập mới nhé!');
-    }
-
-    renderProblemsList(problems, completedProblems); // Cập nhật danh sách
-  
                     // Cập nhật số bài và điểm trung bình
                     const completedExercises = studentData.c[2]?.v || 0; // Cột C: Số bài đã làm
                     const averageScore = studentData.c[3]?.v || 0; // Cột D: Điểm trung bình
@@ -839,7 +802,6 @@ async function generateSimilarProblem(originalProblem) {
                     alert(`Không thể tải tiến độ học tập. Chi tiết lỗi: ${error.message}`);
                 }
             }, 3000); // Chờ 3 giây trước khi cập nhật để Google Sheets kịp xử lý
-	    
         } else {
             throw new Error('Không thể gửi dữ liệu đến Google Form.');
         }
@@ -847,7 +809,6 @@ async function generateSimilarProblem(originalProblem) {
         console.error('Lỗi:', error);
         document.getElementById('result').innerText = `Đã xảy ra lỗi: ${error.message}. Vui lòng thử lại sau.`;
     }
-     
 });
 
         document.getElementById('randomProblemBtn').addEventListener('click', () => {
@@ -873,6 +834,7 @@ async function generateSimilarProblem(originalProblem) {
                     document.getElementById('randomProblemBtn').textContent = `Lấy đề bài ngẫu nhiên (${currentStudentId})`;
                     await fetchProblems();
                     await updateProgress(0);
+		    renderProblemsList(); // Hiển thị danh sách bài tập
                 } else {
                     alert('Mã học sinh không hợp lệ. Vui lòng thử lại.');
                 }
@@ -1069,51 +1031,29 @@ document.getElementById('loginBtn').addEventListener('click', async () => {
         // Chuyển sang giao diện chính
         document.getElementById('loginContainer').style.display = 'none';
         document.getElementById('mainContent').style.display = 'block';
-	await fetchProblems(); // Tải danh sách bài tập
-        const completedProblems = []; // Danh sách bài đã làm
-        renderProblemsList(problems, completedProblems); // Hiển thị danh sách bài tập
     } catch (error) {
         console.error('Lỗi khi tải dữ liệu:', error);
         alert(`Không thể tải tiến độ học tập. Chi tiết lỗi: ${error.message}`);
     }
 });
-function renderProblemsList(problems, completedProblems) {
+function renderProblemsList() {
     const problemsContainer = document.getElementById('problemsContainer');
     problemsContainer.innerHTML = ''; // Xóa danh sách cũ (nếu có)
 
-    problems.forEach((problem, index) => {
-        // Tạo ô vuông bài tập
+    problems.forEach(problem => {
         const problemBox = document.createElement('div');
-        problemBox.className = 'problem-box';
-        problemBox.textContent = index + 1;
+        problemBox.className = 'problem-box red'; // Mặc định bài chưa làm là màu đỏ
+        problemBox.textContent = `Bài ${problem.index}`; // Số thứ tự bài tập
 
-        // Kiểm tra trạng thái bài tập
-        if (completedProblems.includes(problem.index)) {
-            problemBox.classList.add('green'); // Màu xanh nếu đã làm
-        } else {
-            problemBox.classList.add('red'); // Màu đỏ nếu chưa làm
-        }
-
-        // Thêm sự kiện click cho từng bài
-        problemBox.addEventListener('click', () => handleProblemClick(problem, completedProblems));
+        // Sự kiện khi nhấn vào bài tập
+        problemBox.addEventListener('click', () => {
+            displayProblemByIndex(problem.index); // Hiển thị bài tập trong phần đề bài
+        });
 
         problemsContainer.appendChild(problemBox);
     });
 
     document.getElementById('problemList').style.display = 'block'; // Hiển thị danh sách
-}
-function handleProblemClick(problem, completedProblems) {
-    if (completedProblems.includes(problem.index)) {
-        // Nếu bài đã làm, hỏi có muốn làm lại không
-        if (confirm('Bạn đã làm bài này. Có muốn làm lại không?')) {
-            displayProblemByIndex(problem.index); // Hiển thị bài tập
-        } else {
-            alert('Mời bạn chọn bài khác');
-        }
-    } else {
-        // Hiển thị bài tập nếu chưa làm
-        displayProblemByIndex(problem.index);
-    }
 }
 
 });
