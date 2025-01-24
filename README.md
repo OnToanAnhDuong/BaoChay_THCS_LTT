@@ -340,7 +340,9 @@ button.delete:hover {
         let currentStudentId = null;
         let currentHint = '';
         let studentName = '';
-	let currentProblemIndex = 0; // Bắt đầu từ bài đầu tiên
+	let currentProblemIndex = 0; // Bắt đầu từ bài đầu tiên  
+    let completedExercises = []; // Danh sách bài tập đã làm
+    
         function getNextApiKey() {
             const key = API_KEYS[currentKeyIndex];
             currentKeyIndex = (currentKeyIndex + 1) % API_KEYS.length;
@@ -1216,7 +1218,11 @@ document.getElementById('loginBtn').addEventListener('click', async () => {
             }
             addWatermark();
         })();
-function renderExerciseList() {
+
+    </script>
+    
+<script>
+       function renderExerciseList() {
         const exerciseListContainer = document.getElementById('exerciseListContainer');
         exerciseListContainer.innerHTML = ''; // Clear the container
 
@@ -1291,6 +1297,7 @@ function renderExerciseList() {
     fetchProblems().then(() => {
         renderExerciseList();
     });
-    </script>
+</script>
+
 </body>
 </html>
