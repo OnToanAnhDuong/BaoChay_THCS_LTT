@@ -268,11 +268,8 @@ button.delete:hover {
     </script>
 </head>
 <body>
-    <h1>ÔN LYỆN TOÁN LỚP 15  - THẦY GIÁO TÔN THANH CHƯƠNG</h1>
-    <div id="problemList" style="display: none; margin-top: 20px;">
-    <h3>Danh sách bài tập</h3>
-    <div id="problemsContainer" style="display: flex; flex-wrap: wrap; gap: 10px;"></div>
-</div>
+    <h1>ÔN LYỆN TOÁN LỚP 10  - THẦY GIÁO TÔN THANH CHƯƠNG</h1>
+    
     <div id="loginContainer">
         <input type="text" id="studentId" placeholder="Nhập mã học sinh">
         <button id="loginBtn">Đăng nhập</button>
@@ -834,7 +831,6 @@ async function generateSimilarProblem(originalProblem) {
                     document.getElementById('randomProblemBtn').textContent = `Lấy đề bài ngẫu nhiên (${currentStudentId})`;
                     await fetchProblems();
                     await updateProgress(0);
-		    renderProblemsList(); // Hiển thị danh sách bài tập
                 } else {
                     alert('Mã học sinh không hợp lệ. Vui lòng thử lại.');
                 }
@@ -1036,27 +1032,6 @@ document.getElementById('loginBtn').addEventListener('click', async () => {
         alert(`Không thể tải tiến độ học tập. Chi tiết lỗi: ${error.message}`);
     }
 });
-function renderProblemsList() {
-    const problemsContainer = document.getElementById('problemsContainer');
-    problemsContainer.innerHTML = ''; // Xóa danh sách cũ (nếu có)
-
-    problems.forEach(problem => {
-        const problemBox = document.createElement('div');
-        problemBox.className = 'problem-box red'; // Mặc định bài chưa làm là màu đỏ
-        problemBox.textContent = `Bài ${problem.index}`; // Số thứ tự bài tập
-
-        // Sự kiện khi nhấn vào bài tập
-        problemBox.addEventListener('click', () => {
-            displayProblemByIndex(problem.index); // Hiển thị bài tập trong phần đề bài
-        });
-
-        problemsContainer.appendChild(problemBox);
-    });
-
-    // Hiển thị danh sách bài tập
-    document.getElementById('problemList').style.display = 'block';
-}
-
 
 });
 
