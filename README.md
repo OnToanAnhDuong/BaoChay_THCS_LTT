@@ -268,7 +268,7 @@ button.delete:hover {
     </script>
 </head>
 <body>
-    <h1>ÔN LYỆN TOÁN LỚP 13  - THẦY GIÁO TÔN THANH CHƯƠNG</h1>
+    <h1>ÔN LYỆN TOÁN LỚP 15  - THẦY GIÁO TÔN THANH CHƯƠNG</h1>
     <div id="problemList" style="display: none; margin-top: 20px;">
     <h3>Danh sách bài tập</h3>
     <div id="problemsContainer" style="display: flex; flex-wrap: wrap; gap: 10px;"></div>
@@ -1056,6 +1056,7 @@ function renderProblemsList() {
     // Hiển thị danh sách bài tập
     document.getElementById('problemList').style.display = 'block';
 }
+
 
 });
 
