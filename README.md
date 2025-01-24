@@ -269,7 +269,7 @@ button.delete:hover {
     </script>
 </head>
 <body>
-    <h1>ÔN LYỆN TOÁN LỚP 7  - THẦY GIÁO TÔN THANH CHƯƠNG</h1>
+    <h1>ÔN LYỆN TOÁN LỚP 6  - THẦY GIÁO TÔN THANH CHƯƠNG</h1>
     <div id="exerciseListContainer"></div>
     <div id="loginContainer">
         <input type="text" id="studentId" placeholder="Nhập mã học sinh">
@@ -1220,7 +1220,6 @@ document.getElementById('loginBtn').addEventListener('click', async () => {
         })();
 
     </script>
-    
 <script>
     // Tải danh sách bài tập đã làm từ localStorage khi đăng nhập
     function loadCompletedExercises(studentId) {
@@ -1317,31 +1316,37 @@ document.getElementById('loginBtn').addEventListener('click', async () => {
         }
     }
 
-    // Update completedExercises and re-render exercise list when "Chấm Bài" is clicked
-    document.getElementById('submitBtn').addEventListener('click', () => {
-        if (currentProblem) {
-            if (!completedExercises.includes(currentProblem.index.toString())) {
-                completedExercises.push(currentProblem.index.toString());
-                alert(`Bạn đã hoàn thành bài tập số ${currentProblem.index}.`);
-                saveCompletedExercises(currentStudentId); // Lưu tiến trình cho học sinh hiện tại
-            } else {
-                const redo = confirm('Bài tập này đã được chấm. Bạn có muốn làm lại không?');
-                if (!redo) {
-                    alert('Mời bạn chọn bài tập khác.');
-                    return;
-                }
-            }
-
-            if (completedExercises.length === problems.length) {
-                alert('Bạn đã giải hết các bài tập. Xin chờ bài tập tiếp của thầy giáo giao cho bạn.');
-                return;
-            }
-        } else {
+    // Chấm bài: Hiển thị bài làm, chấm điểm, và nhận xét
+    function gradeCurrentProblem() {
+        if (!currentProblem) {
             alert('Vui lòng chọn bài tập trước khi chấm bài.');
             return;
         }
 
+        // Giả lập bài làm và kết quả chấm
+        const studentAnswer = prompt('Nhập bài làm của bạn:');
+        if (!studentAnswer) {
+            alert('Bạn chưa nhập bài làm.');
+            return;
+        }
+
+        // Ví dụ chấm điểm: Kiểm tra độ dài bài làm
+        const score = studentAnswer.length > 10 ? 10 : 5; // Điểm tối đa là 10
+        const feedback = score === 10 ? 'Bài làm tốt, đầy đủ.' : 'Bài làm chưa đủ chi tiết, cần cải thiện.';
+
+        alert(`Điểm của bạn: ${score}/10\nNhận xét: ${feedback}`);
+
+        if (!completedExercises.includes(currentProblem.index.toString())) {
+            completedExercises.push(currentProblem.index.toString());
+            saveCompletedExercises(currentStudentId); // Lưu tiến trình cho học sinh hiện tại
+        }
+
         renderExerciseList();
+    }
+
+    // Update completedExercises and re-render exercise list when "Chấm Bài" is clicked
+    document.getElementById('submitBtn').addEventListener('click', () => {
+        gradeCurrentProblem();
     });
 
     // Initial rendering after fetching problems
