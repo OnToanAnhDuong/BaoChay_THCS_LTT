@@ -293,7 +293,7 @@ button.delete:hover {
     </script>
 </head>
 <body>
-    <h1>ÔN LYỆN TOÁN LỚP 4  - THẦY GIÁO TÔN THANH CHƯƠNG</h1>
+    <h1>ÔN LYỆN TOÁN LỚP 10  - THẦY GIÁO TÔN THANH CHƯƠNG</h1>
     <div id="problemList" style="display: none; margin-top: 20px;">
     <h3>Danh sách bài tập</h3>
     <div id="problemsContainer" style="display: flex; flex-wrap: wrap; gap: 10px;"></div>
@@ -359,14 +359,14 @@ button.delete:hover {
         let currentKeyIndex = 0;
         let problems = [];
         let currentProblem = null;
-	let completedProblems = 0;  // Khai báo số bài đã giải
-        let totalScore = 0;  // Khai báo tổng điểm
+	let totalScore = 0;  // Khai báo tổng điểm
         let currentProblemScore = 0; // Điểm của bài hiện tại
 	let base64Image = ''; // Đặt ở đầu script để có phạm vi toàn cục
         let currentStudentId = null;
         let currentHint = '';
         let studentName = '';
 	let currentProblemIndex = 0; // Bắt đầu từ bài đầu tiên
+ 	let completedProblems = []; // Danh sách bài đã làm, bắt buộc phải là một mảng
         function getNextApiKey() {
             const key = API_KEYS[currentKeyIndex];
             currentKeyIndex = (currentKeyIndex + 1) % API_KEYS.length;
