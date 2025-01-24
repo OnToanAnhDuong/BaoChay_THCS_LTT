@@ -1115,6 +1115,7 @@ document.getElementById('loginBtn').addEventListener('click', async () => {
         console.error('Lỗi khi tải dữ liệu:', error);
         alert(`Không thể tải tiến độ học tập. Chi tiết lỗi: ${error.message}`);
     }
+     renderExerciseList(); // Hiển thị danh sách bài tập
 });
 function renderExerciseList() {
     const grid = document.getElementById('exerciseGrid');
