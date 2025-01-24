@@ -293,7 +293,7 @@ button.delete:hover {
     </script>
 </head>
 <body>
-    <h1>ÔN LYỆN TOÁN LỚP 7  - THẦY GIÁO TÔN THANH CHƯƠNG</h1>
+    <h1>ÔN LYỆN TOÁN LỚP 4  - THẦY GIÁO TÔN THANH CHƯƠNG</h1>
     <div id="problemList" style="display: none; margin-top: 20px;">
     <h3>Danh sách bài tập</h3>
     <div id="problemsContainer" style="display: flex; flex-wrap: wrap; gap: 10px;"></div>
@@ -813,7 +813,18 @@ async function generateSimilarProblem(originalProblem) {
                         console.error(`Không tìm thấy dữ liệu cho mã học sinh: ${currentStudentId}`);
                         return;
                     }
+		   // Kiểm tra nếu bài tập chưa được đánh dấu hoàn thành
+    if (!completedProblems.includes(currentProblemIndex)) {
+        completedProblems.push(currentProblemIndex); // Thêm vào danh sách đã làm
+        alert('Bài tập đã được chấm!');
+    }
 
+    // Kiểm tra nếu tất cả bài đã làm xong
+    if (completedProblems.length === problems.length) {
+        alert('Bạn đã hoàn thành công việc thầy giao. Chờ bài tập mới nhé!');
+    }
+
+    renderProblemsList(problems, completedProblems); // Cập nhật danh sách
                     // Cập nhật số bài và điểm trung bình
                     const completedExercises = studentData.c[2]?.v || 0; // Cột C: Số bài đã làm
                     const averageScore = studentData.c[3]?.v || 0; // Cột D: Điểm trung bình
@@ -827,6 +838,7 @@ async function generateSimilarProblem(originalProblem) {
                     alert(`Không thể tải tiến độ học tập. Chi tiết lỗi: ${error.message}`);
                 }
             }, 3000); // Chờ 3 giây trước khi cập nhật để Google Sheets kịp xử lý
+	    
         } else {
             throw new Error('Không thể gửi dữ liệu đến Google Form.');
         }
@@ -834,18 +846,7 @@ async function generateSimilarProblem(originalProblem) {
         console.error('Lỗi:', error);
         document.getElementById('result').innerText = `Đã xảy ra lỗi: ${error.message}. Vui lòng thử lại sau.`;
     }
-     // Kiểm tra nếu bài tập chưa được đánh dấu hoàn thành
-    if (!completedProblems.includes(currentProblemIndex)) {
-        completedProblems.push(currentProblemIndex); // Thêm vào danh sách đã làm
-        alert('Bài tập đã được chấm!');
-    }
-
-    // Kiểm tra nếu tất cả bài đã làm xong
-    if (completedProblems.length === problems.length) {
-        alert('Bạn đã hoàn thành công việc thầy giao. Chờ bài tập mới nhé!');
-    }
-
-    renderProblemsList(problems, completedProblems); // Cập nhật danh sách
+     
 });
 
         document.getElementById('randomProblemBtn').addEventListener('click', () => {
