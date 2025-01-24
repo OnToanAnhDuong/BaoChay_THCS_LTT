@@ -268,7 +268,7 @@ button.delete:hover {
     </script>
 </head>
 <body>
-    <h1>ÔN LYỆN TOÁN LỚP 7  - THẦY GIÁO TÔN THANH CHƯƠNG</h1>
+    <h1>ÔN LYỆN TOÁN LỚP 8  - THẦY GIÁO TÔN THANH CHƯƠNG</h1>
     <div id="exerciseListContainer"></div>
     <div id="loginContainer">
         <input type="text" id="studentId" placeholder="Nhập mã học sinh">
@@ -1176,35 +1176,24 @@ document.getElementById('loginBtn').addEventListener('click', async () => {
 
     </script>
 <script>
+    // Khai báo các biến toàn cục
+    let problems = []; // Danh sách bài tập từ Google Sheets
+    let completedExercises = []; // Danh sách bài tập đã làm
+    let currentProblem = null; // Bài tập hiện tại
+
     // Tải danh sách bài tập đã làm từ localStorage khi đăng nhập
-    function loadCompletedExercises(studentId) {
-        const savedData = localStorage.getItem(`completedExercises_${studentId}`);
+    function loadCompletedExercises() {
+        const savedData = localStorage.getItem('completedExercises');
         if (savedData) {
             completedExercises = JSON.parse(savedData);
-            console.log(`Đã tải tiến trình của học sinh ${studentId}:`, completedExercises);
-        } else {
-            completedExercises = []; // Nếu không có dữ liệu, khởi tạo danh sách rỗng
+            console.log('Đã tải tiến trình:', completedExercises);
         }
     }
 
     // Lưu danh sách bài tập đã làm vào localStorage
-    function saveCompletedExercises(studentId) {
-        localStorage.setItem(`completedExercises_${studentId}`, JSON.stringify(completedExercises));
-        console.log(`Đã lưu tiến trình của học sinh ${studentId}:`, completedExercises);
-    }
-
-    async function fetchProblems() {
-        try {
-            // Tải dữ liệu từ nguồn của bạn (vd: Google Sheets hoặc API)
-            problems = [
-                { index: "1", problem: "Bài tập 1" },
-                { index: "2", problem: "Bài tập 2" },
-                { index: "3", problem: "Bài tập 3" },
-            ];
-            console.log("Danh sách bài tập đã tải:", problems);
-        } catch (error) {
-            console.error("Lỗi khi tải bài tập:", error);
-        }
+    function saveCompletedExercises() {
+        localStorage.setItem('completedExercises', JSON.stringify(completedExercises));
+        console.log('Đã lưu tiến trình:', completedExercises);
     }
 
     function renderExerciseList() {
@@ -1264,7 +1253,7 @@ document.getElementById('loginBtn').addEventListener('click', async () => {
             if (!completedExercises.includes(currentProblem.index.toString())) {
                 completedExercises.push(currentProblem.index.toString());
                 alert(`Bạn đã hoàn thành bài tập số ${currentProblem.index}.`);
-                saveCompletedExercises(currentStudentId); // Lưu tiến trình cho học sinh hiện tại
+                saveCompletedExercises(); // Lưu tiến trình
             } else {
                 const redo = confirm('Bài tập này đã được chấm. Bạn có muốn làm lại không?');
                 if (!redo) {
@@ -1286,16 +1275,9 @@ document.getElementById('loginBtn').addEventListener('click', async () => {
     });
 
     // Initial rendering after fetching problems
-    document.getElementById('loginBtn').addEventListener('click', async () => {
-        const studentIdInput = document.getElementById('studentId');
-        if (studentIdInput && studentIdInput.value.trim()) {
-            currentStudentId = studentIdInput.value.trim(); // Lấy ID học sinh
-            loadCompletedExercises(currentStudentId); // Tải tiến trình của học sinh hiện tại
-            await fetchProblems(); // Tải danh sách bài tập
-            renderExerciseList(); // Hiển thị danh sách bài tập
-        } else {
-            alert('Vui lòng nhập mã học sinh trước khi đăng nhập.');
-        }
+    fetchProblems().then(() => {
+        loadCompletedExercises(); // Tải tiến trình trước khi hiển thị danh sách
+        renderExerciseList();
     });
 </script>
 
