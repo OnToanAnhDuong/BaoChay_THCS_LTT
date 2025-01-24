@@ -268,7 +268,7 @@ button.delete:hover {
     </script>
 </head>
 <body>
-    <h1>ÔN LYỆN TOÁN LỚP 6  - THẦY GIÁO TÔN THANH CHƯƠNG</h1>
+    <h1>ÔN LYỆN TOÁN LỚP 7  - THẦY GIÁO TÔN THANH CHƯƠNG</h1>
     <div id="exerciseListContainer"></div>
     <div id="loginContainer">
         <input type="text" id="studentId" placeholder="Nhập mã học sinh">
@@ -1176,6 +1176,7 @@ document.getElementById('loginBtn').addEventListener('click', async () => {
 
     </script>
 <script>
+   
     function renderExerciseList() {
         const exerciseListContainer = document.getElementById('exerciseListContainer');
         exerciseListContainer.innerHTML = ''; // Clear the container
@@ -1210,6 +1211,7 @@ document.getElementById('loginBtn').addEventListener('click', async () => {
 
             // Add click event to select an exercise
             exerciseBox.addEventListener('click', () => {
+                currentProblem = problem; // Cập nhật bài tập hiện tại
                 if (isCompleted) {
                     const redo = confirm('Bài tập này đã được chấm. Bạn có muốn làm lại không?');
                     if (!redo) {
@@ -1231,6 +1233,7 @@ document.getElementById('loginBtn').addEventListener('click', async () => {
         if (currentProblem) {
             if (!completedExercises.includes(currentProblem.index.toString())) {
                 completedExercises.push(currentProblem.index.toString());
+                alert(`Bạn đã hoàn thành bài tập số ${currentProblem.index}.`);
             } else {
                 const redo = confirm('Bài tập này đã được chấm. Bạn có muốn làm lại không?');
                 if (!redo) {
@@ -1243,7 +1246,11 @@ document.getElementById('loginBtn').addEventListener('click', async () => {
                 alert('Bạn đã giải hết các bài tập. Xin chờ bài tập tiếp của thầy giáo giao cho bạn.');
                 return;
             }
+        } else {
+            alert('Vui lòng chọn bài tập trước khi chấm bài.');
+            return;
         }
+
         renderExerciseList();
     });
 
