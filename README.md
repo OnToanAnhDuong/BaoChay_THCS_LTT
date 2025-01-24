@@ -268,7 +268,7 @@ button.delete:hover {
     </script>
 </head>
 <body>
-    <h1>ÔN LYỆN TOÁN LỚP 5  - THẦY GIÁO TÔN THANH CHƯƠNG</h1>
+    <h1>ÔN LYỆN TOÁN LỚP 6  - THẦY GIÁO TÔN THANH CHƯƠNG</h1>
     <div id="exerciseListContainer"></div>
     <div id="loginContainer">
         <input type="text" id="studentId" placeholder="Nhập mã học sinh">
@@ -1210,6 +1210,13 @@ document.getElementById('loginBtn').addEventListener('click', async () => {
 
             // Add click event to select an exercise
             exerciseBox.addEventListener('click', () => {
+                if (isCompleted) {
+                    const redo = confirm('Bài tập này đã được chấm. Bạn có muốn làm lại không?');
+                    if (!redo) {
+                        alert('Mời bạn chọn bài tập khác.');
+                        return;
+                    }
+                }
                 displayProblemByIndex(problem.index);
             });
 
@@ -1221,8 +1228,21 @@ document.getElementById('loginBtn').addEventListener('click', async () => {
 
     // Update completedExercises and re-render exercise list when "Chấm Bài" is clicked
     document.getElementById('submitBtn').addEventListener('click', () => {
-        if (currentProblem && !completedExercises.includes(currentProblem.index.toString())) {
-            completedExercises.push(currentProblem.index.toString());
+        if (currentProblem) {
+            if (!completedExercises.includes(currentProblem.index.toString())) {
+                completedExercises.push(currentProblem.index.toString());
+            } else {
+                const redo = confirm('Bài tập này đã được chấm. Bạn có muốn làm lại không?');
+                if (!redo) {
+                    alert('Mời bạn chọn bài tập khác.');
+                    return;
+                }
+            }
+
+            if (completedExercises.length === problems.length) {
+                alert('Bạn đã giải hết các bài tập. Xin chờ bài tập tiếp của thầy giáo giao cho bạn.');
+                return;
+            }
         }
         renderExerciseList();
     });
@@ -1232,7 +1252,6 @@ document.getElementById('loginBtn').addEventListener('click', async () => {
         renderExerciseList();
     });
 </script>
-
 
 </body>
 </html>
