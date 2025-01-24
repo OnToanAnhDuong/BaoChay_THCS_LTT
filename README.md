@@ -293,7 +293,7 @@ button.delete:hover {
     </script>
 </head>
 <body>
-    <h1>ÔN LYỆN TOÁN LỚP 10  - THẦY GIÁO TÔN THANH CHƯƠNG</h1>
+    <h1>ÔN LYỆN TOÁN LỚP 3  - THẦY GIÁO TÔN THANH CHƯƠNG</h1>
     <div id="problemList" style="display: none; margin-top: 20px;">
     <h3>Danh sách bài tập</h3>
     <div id="problemsContainer" style="display: flex; flex-wrap: wrap; gap: 10px;"></div>
