@@ -1222,7 +1222,23 @@ document.getElementById('loginBtn').addEventListener('click', async () => {
     </script>
     
 <script>
-      function renderExerciseList() {
+    
+    // Tải danh sách bài tập đã làm từ localStorage khi đăng nhập
+    function loadCompletedExercises() {
+        const savedData = localStorage.getItem('completedExercises');
+        if (savedData) {
+            completedExercises = JSON.parse(savedData);
+            console.log('Đã tải tiến trình:', completedExercises);
+        }
+    }
+
+    // Lưu danh sách bài tập đã làm vào localStorage
+    function saveCompletedExercises() {
+        localStorage.setItem('completedExercises', JSON.stringify(completedExercises));
+        console.log('Đã lưu tiến trình:', completedExercises);
+    }
+
+    function renderExerciseList() {
         const exerciseListContainer = document.getElementById('exerciseListContainer');
         exerciseListContainer.innerHTML = ''; // Clear the container
 
@@ -1279,6 +1295,7 @@ document.getElementById('loginBtn').addEventListener('click', async () => {
             if (!completedExercises.includes(currentProblem.index.toString())) {
                 completedExercises.push(currentProblem.index.toString());
                 alert(`Bạn đã hoàn thành bài tập số ${currentProblem.index}.`);
+                saveCompletedExercises(); // Lưu tiến trình
             } else {
                 const redo = confirm('Bài tập này đã được chấm. Bạn có muốn làm lại không?');
                 if (!redo) {
@@ -1301,6 +1318,7 @@ document.getElementById('loginBtn').addEventListener('click', async () => {
 
     // Initial rendering after fetching problems
     fetchProblems().then(() => {
+        loadCompletedExercises(); // Tải tiến trình trước khi hiển thị danh sách
         renderExerciseList();
     });
 </script>
