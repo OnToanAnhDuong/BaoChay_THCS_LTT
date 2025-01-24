@@ -1243,9 +1243,9 @@ document.getElementById('loginBtn').addEventListener('click', async () => {
         try {
             // Tải dữ liệu từ nguồn của bạn (vd: Google Sheets hoặc API)
             problems = [
-                { index: "1", problem: "Bài tập 1" },
-                { index: "2", problem: "Bài tập 2" },
-                { index: "3", problem: "Bài tập 3" },
+                { index: "1", problem: "Giải phương trình bậc nhất: 2x + 3 = 7" },
+                { index: "2", problem: "Tính giá trị của biểu thức: 5 * (3 + 2) - 8" },
+                { index: "3", problem: "Tìm x biết: x^2 - 4x + 4 = 0" },
             ];
             console.log("Danh sách bài tập đã tải:", problems);
         } catch (error) {
@@ -1302,6 +1302,17 @@ document.getElementById('loginBtn').addEventListener('click', async () => {
         });
 
         exerciseListContainer.appendChild(gridContainer);
+    }
+
+    function displayProblemByIndex(index) {
+        const problemContainer = document.getElementById('problemContainer');
+        const selectedProblem = problems.find(problem => problem.index === index);
+
+        if (selectedProblem) {
+            problemContainer.innerHTML = `<div><strong>Bài tập ${selectedProblem.index}:</strong> ${selectedProblem.problem}</div>`;
+        } else {
+            problemContainer.innerHTML = '<div>Không tìm thấy bài tập.</div>';
+        }
     }
 
     // Update completedExercises and re-render exercise list when "Chấm Bài" is clicked
