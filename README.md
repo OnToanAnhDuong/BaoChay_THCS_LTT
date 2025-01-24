@@ -819,12 +819,7 @@ async function generateSimilarProblem(originalProblem) {
         alert('Bài tập đã được chấm!');
     }
 
-    // Kiểm tra nếu tất cả bài đã làm xong
-    if (completedProblems.length === problems.length) {
-        alert('Bạn đã hoàn thành công việc thầy giao. Chờ bài tập mới nhé!');
-    }
-
-    renderProblemsList(problems, completedProblems); // Cập nhật danh sách
+  
                     // Cập nhật số bài và điểm trung bình
                     const completedExercises = studentData.c[2]?.v || 0; // Cột C: Số bài đã làm
                     const averageScore = studentData.c[3]?.v || 0; // Cột D: Điểm trung bình
