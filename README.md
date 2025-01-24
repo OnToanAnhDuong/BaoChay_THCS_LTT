@@ -249,6 +249,31 @@ button.delete {
 button.delete:hover {
     background-color: #c82333;
 }
+.problem-box {
+    width: 80px;
+    height: 80px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 16px;
+    font-weight: bold;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+    text-align: center;
+}
+
+.problem-box.red {
+    background-color: #ff4d4d; /* Màu đỏ cho bài chưa làm */
+}
+
+.problem-box.green {
+    background-color: #4caf50; /* Màu xanh cho bài đã làm */
+}
+
+.problem-box:hover {
+    opacity: 0.9; /* Hiệu ứng hover */
+}
 </style>
 
     <!-- Thêm MathJax -->
@@ -269,7 +294,10 @@ button.delete:hover {
 </head>
 <body>
     <h1>ÔN LYỆN TOÁN LỚP 10  - THẦY GIÁO TÔN THANH CHƯƠNG</h1>
-    
+    <div id="problemList" style="display: none; margin-top: 20px;">
+    <h3>Danh sách bài tập</h3>
+    <div id="problemsContainer" style="display: flex; flex-wrap: wrap; gap: 10px;"></div>
+</div>
     <div id="loginContainer">
         <input type="text" id="studentId" placeholder="Nhập mã học sinh">
         <button id="loginBtn">Đăng nhập</button>
@@ -806,6 +834,18 @@ async function generateSimilarProblem(originalProblem) {
         console.error('Lỗi:', error);
         document.getElementById('result').innerText = `Đã xảy ra lỗi: ${error.message}. Vui lòng thử lại sau.`;
     }
+     // Kiểm tra nếu bài tập chưa được đánh dấu hoàn thành
+    if (!completedProblems.includes(currentProblemIndex)) {
+        completedProblems.push(currentProblemIndex); // Thêm vào danh sách đã làm
+        alert('Bài tập đã được chấm!');
+    }
+
+    // Kiểm tra nếu tất cả bài đã làm xong
+    if (completedProblems.length === problems.length) {
+        alert('Bạn đã hoàn thành công việc thầy giao. Chờ bài tập mới nhé!');
+    }
+
+    renderProblemsList(problems, completedProblems); // Cập nhật danh sách
 });
 
         document.getElementById('randomProblemBtn').addEventListener('click', () => {
@@ -1027,11 +1067,52 @@ document.getElementById('loginBtn').addEventListener('click', async () => {
         // Chuyển sang giao diện chính
         document.getElementById('loginContainer').style.display = 'none';
         document.getElementById('mainContent').style.display = 'block';
+	await fetchProblems(); // Tải danh sách bài tập
+        const completedProblems = []; // Danh sách bài đã làm
+        renderProblemsList(problems, completedProblems); // Hiển thị danh sách bài tập
     } catch (error) {
         console.error('Lỗi khi tải dữ liệu:', error);
         alert(`Không thể tải tiến độ học tập. Chi tiết lỗi: ${error.message}`);
     }
 });
+function renderProblemsList(problems, completedProblems) {
+    const problemsContainer = document.getElementById('problemsContainer');
+    problemsContainer.innerHTML = ''; // Xóa danh sách cũ (nếu có)
+
+    problems.forEach((problem, index) => {
+        // Tạo ô vuông bài tập
+        const problemBox = document.createElement('div');
+        problemBox.className = 'problem-box';
+        problemBox.textContent = index + 1;
+
+        // Kiểm tra trạng thái bài tập
+        if (completedProblems.includes(problem.index)) {
+            problemBox.classList.add('green'); // Màu xanh nếu đã làm
+        } else {
+            problemBox.classList.add('red'); // Màu đỏ nếu chưa làm
+        }
+
+        // Thêm sự kiện click cho từng bài
+        problemBox.addEventListener('click', () => handleProblemClick(problem, completedProblems));
+
+        problemsContainer.appendChild(problemBox);
+    });
+
+    document.getElementById('problemList').style.display = 'block'; // Hiển thị danh sách
+}
+function handleProblemClick(problem, completedProblems) {
+    if (completedProblems.includes(problem.index)) {
+        // Nếu bài đã làm, hỏi có muốn làm lại không
+        if (confirm('Bạn đã làm bài này. Có muốn làm lại không?')) {
+            displayProblemByIndex(problem.index); // Hiển thị bài tập
+        } else {
+            alert('Mời bạn chọn bài khác');
+        }
+    } else {
+        // Hiển thị bài tập nếu chưa làm
+        displayProblemByIndex(problem.index);
+    }
+}
 
 });
 
