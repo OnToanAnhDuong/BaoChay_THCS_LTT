@@ -268,7 +268,7 @@ button.delete:hover {
     </script>
 </head>
 <body>
-    <h1>ÔN LYỆN TOÁN LỚP 6  - THẦY GIÁO TÔN THANH CHƯƠNG</h1>
+    <h1>ÔN LYỆN TOÁN LỚP 7  - THẦY GIÁO TÔN THANH CHƯƠNG</h1>
     <div id="exerciseListContainer"></div>
     <div id="loginContainer">
         <input type="text" id="studentId" placeholder="Nhập mã học sinh">
@@ -1244,36 +1244,6 @@ document.getElementById('loginBtn').addEventListener('click', async () => {
         exerciseListContainer.appendChild(gridContainer);
     }
 
-    function displayProblemByIndex(index) {
-        const problemContainer = document.getElementById('problemContainer');
-        const selectedProblem = problems.find(problem => problem.index === index);
-
-        if (selectedProblem) {
-            currentProblem = selectedProblem; // Cập nhật bài tập hiện tại
-            problemContainer.innerHTML = `<div><strong>Bài tập ${selectedProblem.index}:</strong> ${selectedProblem.problem}</div>`;
-
-            // Gọi hàm generateHint() để tạo gợi ý cho bài tập hiện tại
-            generateHint(selectedProblem.problem).then(hint => {
-                currentHint = hint; // Cập nhật gợi ý
-                console.log(`Gợi ý cho bài tập ${selectedProblem.index}:`, hint);
-            }).catch(error => {
-                console.error('Lỗi khi tạo gợi ý:', error);
-                currentHint = 'Không thể tạo gợi ý cho bài tập này.';
-            });
-        } else {
-            problemContainer.innerHTML = '<div>Không tìm thấy bài tập.</div>';
-        }
-    }
-
-    // Nút "Gợi ý" sử dụng currentHint
-    document.getElementById('hintBtn').addEventListener('click', () => {
-        if (currentHint) {
-            alert(currentHint); // Hiển thị gợi ý
-        } else {
-            alert('Chưa có gợi ý cho bài tập này. Vui lòng thử lại.');
-        }
-    });
-
     // Update completedExercises and re-render exercise list when "Chấm Bài" is clicked
     document.getElementById('submitBtn').addEventListener('click', () => {
         if (currentProblem) {
@@ -1313,5 +1283,6 @@ document.getElementById('loginBtn').addEventListener('click', async () => {
         }
     });
 </script>
+
 </body>
 </html>
