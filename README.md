@@ -268,7 +268,7 @@ button.delete:hover {
     </script>
 </head>
 <body>
-    <h1>ÔN LYỆN TOÁN LỚP 26  - THẦY GIÁO TÔN THANH CHƯƠNG</h1>
+    <h1>ÔN LYỆN TOÁN LỚP 6  - THẦY GIÁO TÔN THANH CHƯƠNG</h1>
     <div id="exerciseListContainer"></div>
     <div id="loginContainer">
         <input type="text" id="studentId" placeholder="Nhập mã học sinh">
@@ -726,11 +726,22 @@ async function generateSimilarProblem(originalProblem) {
         alert('Vui lòng chọn bài tập trước khi chấm bài.');
         return;
     }
+    if (completedExercises.includes(currentProblem.index.toString())) {
+    const redo = confirm('Bài tập này đã được chấm. Bạn có muốn làm lại không?');
+    if (!redo) {
+        alert('Mời bạn chọn bài tập khác.');
+        currentProblem = null; // Xóa bài tập hiện tại nếu người dùng bỏ qua
+        return;
+    }
+}
     if (!problemText) {
         alert('Vui lòng đợi đề bài được tải.');
         return;
     }
-
+if (!currentProblem) {
+    alert('Vui lòng chọn bài tập khác.');
+    return;
+}
     if (!base64Image && !studentFileInput?.files?.length) {
         alert('Vui lòng chọn hoặc chụp ảnh bài làm của học sinh.');
         return;
