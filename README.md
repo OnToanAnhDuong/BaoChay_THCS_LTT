@@ -268,7 +268,7 @@ button.delete:hover {
     </script>
 </head>
 <body>
-    <h1>ÔN LYỆN TOÁN LỚP 25  - THẦY GIÁO TÔN THANH CHƯƠNG</h1>
+    <h1>ÔN LYỆN TOÁN LỚP 20  - THẦY GIÁO TÔN THANH CHƯƠNG</h1>
     <div id="exerciseListContainer"></div>
     <div id="loginContainer">
         <input type="text" id="studentId" placeholder="Nhập mã học sinh">
@@ -813,13 +813,23 @@ async function generateSimilarProblem(originalProblem) {
             displayRandomProblem();
         });
 
-        document.getElementById('hintBtn').addEventListener('click', () => {
-            if (currentHint) {
-                showMessageBox(currentHint);
-            } else {
-                alert("Chưa có gợi ý cho bài toán này.");
-            }
-        });
+       document.getElementById('hintBtn').addEventListener('click', async () => {
+    const problemText = document.getElementById('problemText').textContent.trim();
+
+    if (!problemText || problemText === 'Không tìm thấy bài tập.') {
+        alert('Không có bài tập nào để tạo gợi ý.');
+        return;
+    }
+
+    try {
+        const hint = await generateHint(problemText);
+        alert(`Gợi ý: ${hint}`);
+    } catch (error) {
+        console.error('Lỗi khi tạo gợi ý:', error);
+        alert('Không thể tạo gợi ý, vui lòng thử lại sau.');
+    }
+});
+
 
         document.getElementById('loginBtn').addEventListener('click', async () => {
             const studentId = document.getElementById('studentId').value.trim();
@@ -1214,60 +1224,52 @@ document.getElementById('loginBtn').addEventListener('click', async () => {
     }
 
     // Hàm hiển thị danh sách bài tập
- function renderExerciseList() {
-    const exerciseListContainer = document.getElementById('exerciseListContainer');
-    exerciseListContainer.innerHTML = ''; // Clear the container
+    function renderExerciseList() {
+        const exerciseListContainer = document.getElementById('exerciseListContainer');
+        exerciseListContainer.innerHTML = ''; // Xóa nội dung cũ
 
-    if (!problems.length) {
-        exerciseListContainer.textContent = 'Danh sách bài tập chưa được tải.';
-        return;
-    }
+        if (!problems.length) {
+            exerciseListContainer.textContent = 'Danh sách bài tập chưa được tải.';
+            return;
+        }
 
-    // Create a grid to display exercises
-    const gridContainer = document.createElement('div');
-    gridContainer.style.display = 'grid';
-    gridContainer.style.gridTemplateColumns = 'repeat(auto-fit, minmax(50px, 1fr))';
-    gridContainer.style.gap = '10px';
-    gridContainer.style.marginTop = '20px';
+        const gridContainer = document.createElement('div');
+        gridContainer.style.display = 'grid';
+        gridContainer.style.gridTemplateColumns = 'repeat(auto-fit, minmax(50px, 1fr))';
+        gridContainer.style.gap = '10px';
+        gridContainer.style.marginTop = '20px';
 
-    // Render each exercise as a square
-    problems.forEach(problem => {
-        const exerciseBox = document.createElement('div');
-        exerciseBox.textContent = problem.index;
-        exerciseBox.style.border = '1px solid #ddd';
-        exerciseBox.style.borderRadius = '5px';
-        exerciseBox.style.textAlign = 'center';
-        exerciseBox.style.padding = '10px';
-        exerciseBox.style.cursor = 'pointer';
-        exerciseBox.style.fontWeight = 'bold';
+        problems.forEach(problem => {
+            const exerciseBox = document.createElement('div');
+            exerciseBox.textContent = `Bài ${problem.index}`;
+            exerciseBox.style.border = '1px solid #ddd';
+            exerciseBox.style.borderRadius = '5px';
+            exerciseBox.style.textAlign = 'center';
+            exerciseBox.style.padding = '10px';
+            exerciseBox.style.cursor = 'pointer';
+            exerciseBox.style.fontWeight = 'bold';
 
-        // Set background color based on completion status
-        const isCompleted = completedExercises.includes(problem.index.toString());
-        exerciseBox.style.backgroundColor = isCompleted ? '#5cb85c' : '#f0ad4e'; // Green for done, yellow for not done
-        exerciseBox.style.color = isCompleted ? 'white' : 'black';
+            const isCompleted = completedExercises.includes(problem.index.toString());
+            exerciseBox.style.backgroundColor = isCompleted ? '#5cb85c' : '#f0ad4e';
+            exerciseBox.style.color = isCompleted ? 'white' : 'black';
 
-        // Add click event to select an exercise
-        exerciseBox.addEventListener('click', async () => {
-            currentProblem = problem; // Cập nhật bài tập hiện tại
-            displayProblemByIndex(problem.index); // Hiển thị bài tập
+            exerciseBox.addEventListener('click', () => {
+                currentProblem = problem;
+                if (isCompleted) {
+                    const redo = confirm('Bài tập này đã được chấm. Bạn có muốn làm lại không?');
+                    if (!redo) {
+                        alert('Mời bạn chọn bài tập khác.');
+                        return;
+                    }
+                }
+                displayProblemByIndex(problem.index);
+            });
 
-            try {
-                // Gọi hàm gợi ý
-                currentHint = await generateHint(problem.problem);
-                console.log(`Gợi ý cho bài tập ${problem.index}:`, currentHint);
-            } catch (error) {
-                console.error('Lỗi khi tạo gợi ý:', error);
-                currentHint = 'Không có gợi ý khả dụng.';
-            }
-
-            alert(`Bạn đã chọn bài tập số ${problem.index}.`);
+            gridContainer.appendChild(exerciseBox);
         });
 
-        gridContainer.appendChild(exerciseBox);
-    });
-
-    exerciseListContainer.appendChild(gridContainer);
-}
+        exerciseListContainer.appendChild(gridContainer);
+    }
 
     // Hàm tải danh sách bài tập từ Google Sheet
     async function fetchProblems() {
@@ -1290,14 +1292,7 @@ document.getElementById('loginBtn').addEventListener('click', async () => {
             problems = [];
         }
     }
-	  // Gắn sự kiện vào nút gợi ý
-   document.getElementById('hintBtn').addEventListener('click', () => {
-    if (currentHint) {
-        alert(`Gợi ý: ${currentHint}`);
-    } else {
-        alert('Chưa có gợi ý cho bài tập này.');
-    }
-});
+
     // Gắn sự kiện vào nút chấm bài
     document.getElementById('submitBtn').addEventListener('click', gradeCurrentProblem);
 
