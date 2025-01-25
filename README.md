@@ -268,7 +268,7 @@ button.delete:hover {
     </script>
 </head>
 <body>
-    <h1>ÔN LYỆN TOÁN LỚP 6  - THẦY GIÁO TÔN THANH CHƯƠNG</h1>
+    <h1>ÔN LYỆN TOÁN LỚP 16  - THẦY GIÁO TÔN THANH CHƯƠNG</h1>
     <div id="exerciseListContainer"></div>
     <div id="loginContainer">
         <input type="text" id="studentId" placeholder="Nhập mã học sinh">
@@ -1375,6 +1375,7 @@ document.getElementById('loginBtn').addEventListener('click', async () => {
                 const redo = confirm('Bài tập này đã được chấm. Bạn có muốn làm lại không?');
                 if (!redo) {
                     alert('Mời bạn chọn bài tập khác.');
+		    currentProblem = null; // Xóa bài tập hiện tại nếu người dùng bỏ qua
                     return;
                 }
             }
