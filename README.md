@@ -829,8 +829,6 @@ async function generateSimilarProblem(originalProblem) {
         alert('Không thể tạo gợi ý, vui lòng thử lại sau.');
     }
 });
-
-
         document.getElementById('loginBtn').addEventListener('click', async () => {
             const studentId = document.getElementById('studentId').value.trim();
             if (studentId) {
@@ -850,10 +848,9 @@ async function generateSimilarProblem(originalProblem) {
             }
         });
 
-	document.getElementById('selectProblemBtn').addEventListener('click', async () => {
+	document.getElementById('selectProblemBtn').addEventListener('click', () => {
     const problemIndexInput = document.getElementById('problemIndexInput').value.trim();
 
-    // Kiểm tra xem người dùng đã nhập số thứ tự hay chưa
     if (!problemIndexInput) {
         alert('Vui lòng nhập số thứ tự bài cần chọn.');
         return;
@@ -863,25 +860,10 @@ async function generateSimilarProblem(originalProblem) {
     const selectedProblem = problems.find(problem => parseInt(problem.index) === parseInt(problemIndexInput));
 
     if (selectedProblem) {
-        // Hiển thị đề bài
-        document.getElementById('problemText').innerHTML = formatProblemText(selectedProblem.problem);
-
-        // Gọi hàm generateHint() để tạo gợi ý
-        try {
-            currentHint = await generateHint(selectedProblem.problem);
-            console.log('Gợi ý cho bài tập đã chọn:', currentHint);
-        } catch (error) {
-            console.error('Lỗi khi tạo gợi ý:', error);
-            currentHint = null;
-        }
-
-        // Hiển thị nội dung MathJax
-        MathJax.typesetPromise([document.getElementById('problemText')]).catch(err => {
-            console.error('MathJax rendering error:', err);
-        });
+        currentProblem = selectedProblem; // Cập nhật bài tập hiện tại
+        displayProblemByIndex(currentProblem.index); // Hiển thị đề bài
     } else {
-        // Không tìm thấy bài tập
-        document.getElementById('problemText').textContent = `Không tìm thấy bài tập với số thứ tự ${problemIndexInput}.`;
+        alert(`Không tìm thấy bài tập với số thứ tự ${problemIndexInput}.`);
     }
 });
 
