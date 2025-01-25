@@ -268,7 +268,7 @@ button.delete:hover {
     </script>
 </head>
 <body>
-    <h1>ÔN LYỆN TOÁN LỚP 16  - THẦY GIÁO TÔN THANH CHƯƠNG</h1>
+    <h1>ÔN LYỆN TOÁN LỚP 26  - THẦY GIÁO TÔN THANH CHƯƠNG</h1>
     <div id="exerciseListContainer"></div>
     <div id="loginContainer">
         <input type="text" id="studentId" placeholder="Nhập mã học sinh">
@@ -1365,32 +1365,35 @@ document.getElementById('loginBtn').addEventListener('click', async () => {
     }
 
     // Update completedExercises and re-render exercise list when "Chấm Bài" is clicked
-    document.getElementById('submitBtn').addEventListener('click', () => {
-        if (currentProblem) {
-            if (!completedExercises.includes(currentProblem.index.toString())) {
-                completedExercises.push(currentProblem.index.toString());
-                alert(`Bạn đã hoàn thành bài tập số ${currentProblem.index}.`);
-                saveCompletedExercises(currentStudentId); // Lưu tiến trình cho học sinh hiện tại
-            } else {
-                const redo = confirm('Bài tập này đã được chấm. Bạn có muốn làm lại không?');
-                if (!redo) {
-                    alert('Mời bạn chọn bài tập khác.');
-		    currentProblem = null; // Xóa bài tập hiện tại nếu người dùng bỏ qua
-                    return;
-                }
-            }
-
-            if (completedExercises.length === problems.length) {
-                alert('Bạn đã giải hết các bài tập. Xin chờ bài tập tiếp của thầy giáo giao cho bạn.');
+   document.getElementById('submitBtn').addEventListener('click', () => {
+    if (currentProblem) {
+        if (!completedExercises.includes(currentProblem.index.toString())) {
+            completedExercises.push(currentProblem.index.toString());
+            alert(`Bạn đã hoàn thành bài tập số ${currentProblem.index}.`);
+            saveCompletedExercises(currentStudentId); // Lưu tiến trình cho học sinh hiện tại
+        } else {
+            const redo = confirm('Bài tập này đã được chấm. Bạn có muốn làm lại không?');
+            if (!redo) {
+                alert('Mời bạn chọn bài tập khác.');
+                currentProblem = null; // Xóa bài tập hiện tại nếu người dùng bỏ qua
+                renderExerciseList(); // Cập nhật lại danh sách bài tập để làm rõ rằng không có bài nào đang chọn
                 return;
             }
-        } else {
-            alert('Vui lòng chọn bài tập trước khi chấm bài.');
-            return;
         }
 
-        renderExerciseList();
-    });
+        if (completedExercises.length === problems.length) {
+            alert('Bạn đã giải hết các bài tập. Xin chờ bài tập tiếp của thầy giáo giao cho bạn.');
+            currentProblem = null; // Đặt lại bài hiện tại sau khi hoàn thành tất cả bài tập
+            return;
+        }
+    } else {
+        alert('Vui lòng chọn bài tập trước khi chấm bài.');
+        return;
+    }
+
+    renderExerciseList(); // Cập nhật danh sách bài tập
+});
+
 
     // Initial rendering after fetching problems
     document.getElementById('loginBtn').addEventListener('click', () => {
