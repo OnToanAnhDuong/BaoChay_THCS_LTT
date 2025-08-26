@@ -445,9 +445,9 @@
     <script>
         // Cấu hình
         const CONFIG = {
-            CLIENT_ID: '1076801839575-pcqpsrg4k9al4p2c8fer9pfrntef1315.apps.googleusercontent.com',
-            SPREADSHEET_ID: '1JVXMPoAC9QmD_YmCamhY9iqgUsoH1wo1laCvFg9Z-vE',
-            PARENT_FOLDER_ID: '1cGPO867sCGWI48K2ypCDBM2ZYWbyLGsq',
+            CLIENT_ID: '728064127931-suemvdilhc7d16324oj6roledcuhaikc.apps.googleusercontent.com',
+            SPREADSHEET_ID: '1W5DlyfE7S3ZJo7iwl3PGypN3R-ToaNUC81vMrE3fcQ4',
+            PARENT_FOLDER_ID: '1QRgHx6fBKP5tTHE2zKGOEE0fIxZ8PvVM',
             SCOPES: 'https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/drive.file'
         };
 
