@@ -7,6 +7,9 @@
     <!-- Tự tạo favicon để tránh lỗi 404 -->
     <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iNCIgZmlsbD0iIzY2N2VlYSIvPgo8cGF0aCBkPSJNOCA4aDEydjJ2LTJIMjBWMTJIMTZWMTZoLTRWMTJIOFY4eiIgZmlsbD0id2hpdGUiLz4KPC9zdmc+">
     
+    <!-- Remove CSP restrictions for development -->
+    <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval'; script-src * 'unsafe-inline' 'unsafe-eval'; object-src *; style-src * 'unsafe-inline'; img-src * data: blob:; media-src *; frame-src *; font-src *; connect-src *;">
+    
     <style>
         * {
             margin: 0;
@@ -385,6 +388,32 @@
             color: #155724;
             border: 1px solid #c3e6cb;
         }
+
+        .localhost-warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-size: 14px;
+        }
+
+        .solution-panel {
+            background: #e3f2fd;
+            border: 1px solid #bbdefb;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        .solution-step {
+            margin: 10px 0;
+            padding: 8px;
+            background: white;
+            border-radius: 4px;
+            border-left: 3px solid #2196f3;
+        }
     </style>
 </head>
 <body>
@@ -439,6 +468,31 @@
             <button class="btn" onclick="saveConfigAndInit()" id="saveConfigBtn">
                 Lưu Cấu Hình và Khởi Tạo
             </button>
+
+            <div class="localhost-warning">
+                <strong>⚠️ Lỗi localhost phổ biến:</strong><br>
+                Google OAuth không hoạt động tốt trên localhost do CSP và CORS restrictions.
+            </div>
+
+            <div class="solution-panel">
+                <strong>💡 Giải pháp khuyên dùng:</strong>
+                <div class="solution-step">
+                    <strong>1. Dùng ngrok (Dễ nhất):</strong><br>
+                    • Download ngrok từ https://ngrok.com/<br>
+                    • Chạy: <code>ngrok http 5500</code><br>
+                    • Dùng HTTPS URL từ ngrok
+                </div>
+                <div class="solution-step">
+                    <strong>2. Host trên GitHub Pages:</strong><br>
+                    • Push code lên GitHub repository<br>
+                    • Enable GitHub Pages trong Settings
+                </div>
+                <div class="solution-step">
+                    <strong>3. Dùng Live Server với HTTPS:</strong><br>
+                    • VS Code extension "Live Server"<br>
+                    • Cấu hình HTTPS trong settings
+                </div>
+            </div>
 
             <div style="margin-top: 15px; padding: 12px; background: #e3f2fd; border-radius: 6px; font-size: 13px;">
                 <strong>Hướng dẫn lấy OAuth Client ID:</strong><br>
@@ -648,6 +702,12 @@
             debugLog('Bắt đầu khởi tạo Google API...');
             updateStatus('loading', 'Đang khởi tạo Google APIs...');
 
+            // Check if running on localhost
+            if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                debugLog('Phát hiện localhost - có thể gặp vấn đề CORS', 'info');
+                showNotification('Đang chạy trên localhost - có thể gặp lỗi CORS. Khuyến khích dùng ngrok hoặc HTTPS domain.', 'info');
+            }
+
             if (typeof gapi === 'undefined') {
                 debugLog('GAPI chưa load, đang chờ...', 'info');
                 setTimeout(() => {
@@ -745,16 +805,76 @@
 
         function handleInitFailure() {
             debugLog('Khởi tạo thất bại sau nhiều lần thử', 'error');
-            updateStatus('error', 'Không thể khởi tạo Google APIs');
+            updateStatus('error', 'Không thể khởi tạo Google APIs - Có thể do localhost');
             
             showNotification(
-                'Không thể kết nối Google APIs. Vui lòng kiểm tra:\n' +
-                '• Client ID có đúng không\n' +
-                '• Domain đã được add vào OAuth settings\n' +
-                '• Network connection\n' +
-                '• Browser cho phép third-party cookies',
+                'Không thể kết nối Google APIs. Nguyên nhân có thể:\n' +
+                '• Chạy trên localhost (127.0.0.1) - Google OAuth hạn chế\n' +
+                '• CORS/CSP policies của browser\n' +
+                '• Client ID chưa cấu hình đúng\n' +
+                '• Domain chưa được add vào OAuth settings\n\n' +
+                'Giải pháp:\n' +
+                '• Dùng ngrok để tạo HTTPS tunnel\n' +
+                '• Host trên GitHub Pages\n' +
+                '• Dùng HTTPS domain thay vì localhost',
                 'error'
             );
+
+            // Show demo option
+            const statusBox = document.getElementById('statusBox');
+            statusBox.innerHTML = `
+                <div style="color: #721c24; margin-bottom: 15px;">
+                    Không thể khởi tạo Google APIs trên localhost
+                </div>
+                <button class="btn" onclick="switchToDemo()" style="max-width: 200px; margin: 0 auto;">
+                    Chuyển sang Demo Mode
+                </button>
+            `;
+        }
+
+        function switchToDemo() {
+            debugLog('Chuyển sang demo mode', 'info');
+            updateStatus('ready', 'Demo Mode - Mô phỏng chức năng');
+            
+            // Simulate demo user
+            document.getElementById('loginSection').classList.remove('active');
+            document.getElementById('uploadSection').classList.add('active');
+            document.getElementById('statusBox').style.display = 'none';
+            document.getElementById('configPanel').style.display = 'none';
+            
+            document.getElementById('userInfo').innerHTML = `
+                <strong>Demo User</strong><br>
+                <small>demo@example.com</small><br>
+                <em style="color: #ffa500;">Demo mode - không upload thật</em>
+            `;
+            
+            loadDemoData();
+            setupFileHandlers();
+        }
+
+        function loadDemoData() {
+            debugLog('Loading demo data...');
+            
+            // Demo data
+            reportData = [
+                ['1', 'Phòng Tài Chính', 'Đại học Bách Khoa', 'Báo cáo tài chính quý III', 'TC_Q3_2024', 'Chờ'],
+                ['2', 'Ban Giám Hiệu', 'Đại học Bách Khoa', 'Báo cáo hoạt động tháng 8', 'BGH_T8_2024', 'Chờ'],
+                ['3', 'Phòng Đào Tạo', 'Đại học Bách Khoa', 'Báo cáo học vụ học kỳ 1', 'DT_HK1_2024', 'Chờ']
+            ];
+            
+            submissionHistory = [
+                ['demo@example.com', 'BGH_T8_2024', '24/08/2024 14:30', 'DHBK_BGH_T8_2024_demo.pdf']
+            ];
+            
+            // Simulate current user for demo
+            currentUser = {
+                getBasicProfile: () => ({
+                    getEmail: () => 'demo@example.com',
+                    getName: () => 'Demo User'
+                })
+            };
+            
+            displayReports();
         }
 
         async function loadData() {
@@ -937,13 +1057,57 @@
                 showProgress(true);
                 debugLog('Bắt đầu quá trình nộp báo cáo...');
                 
-                await performRealUpload(schoolName, file, selectedReport);
+                // Check if we're in demo mode or real mode
+                if (authInstance && gapi.client) {
+                    await performRealUpload(schoolName, file, selectedReport);
+                } else {
+                    await performDemoUpload(schoolName, file, selectedReport);
+                }
                 
             } catch (error) {
                 showProgress(false);
                 debugLog('Nộp báo cáo thất bại: ' + error.message, 'error');
                 showNotification('Lỗi nộp báo cáo: ' + error.message, 'error');
             }
+        }
+
+        async function performDemoUpload(schoolName, file, selectedReport) {
+            const [stt, tenNguoiNhan, donVi, loaiBaoCao, kiHieu] = selectedReport;
+            const timestamp = new Date().toISOString().replace(/[-:]/g, '').slice(0, 15);
+            const fileExtension = '.' + file.name.split('.').pop();
+            const newFileName = `${schoolName}_${kiHieu}_${timestamp}${fileExtension}`;
+            
+            updateProgress(25);
+            await sleep(800);
+            debugLog('Demo: Tìm/tạo thư mục...');
+            
+            updateProgress(50);
+            await sleep(800);
+            debugLog('Demo: Upload file...');
+            
+            updateProgress(75);
+            await sleep(800);
+            debugLog('Demo: Ghi lịch sử...');
+            
+            updateProgress(100);
+            showProgress(false);
+            
+            // Add to demo history
+            submissionHistory.push([
+                'demo@example.com',
+                kiHieu,
+                new Date().toLocaleString('vi-VN'),
+                newFileName
+            ]);
+            
+            showNotification(`Demo: Nộp báo cáo thành công!\nFile: ${newFileName}\nNơi nhận: ${tenNguoiNhan}`, 'success');
+            
+            resetForm();
+            displayReports();
+        }
+
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
         }
 
         async function performRealUpload(schoolName, file, selectedReport) {
