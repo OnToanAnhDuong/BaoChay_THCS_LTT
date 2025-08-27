@@ -358,7 +358,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>Hệ Thống Nộp Báo Cáo</h1>
+            <h1>Hệ Thống Nộp BC</h1>
             <p>Nộp báo cáo một cách nhanh chóng và hiệu quả</p>
         </div>
 
