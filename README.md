@@ -445,7 +445,7 @@
     <script>
         // Cấu hình
         const CONFIG = {
-            CLIENT_ID: '1076801839575-pcqpsrg4k9al4p2c8fer9pfrntef1315.apps.googleusercontent.com',
+            CLIENT_ID: 'AIzaSyAHUdJ7bykPbOs7hgBQ09t8oSs-M2GrFG8',
             SPREADSHEET_ID: '1JVXMPoAC9QmD_YmCamhY9iqgUsoH1wo1laCvFg9Z-vE',
             PARENT_FOLDER_ID: '1cGPO867sCGWI48K2ypCDBM2ZYWbyLGsq',
             SCOPES: 'https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/drive.file'
