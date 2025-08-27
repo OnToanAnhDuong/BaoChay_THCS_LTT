@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hệ Thống Nộp Báo Cáo</title>
+    <title>Hệ Thống BC</title>
     <script src="https://apis.google.com/js/api.js" async defer></script>
     <style>
         * {
