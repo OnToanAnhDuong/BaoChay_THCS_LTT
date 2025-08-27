@@ -3,8 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hệ Thống BC</title>
-    <script src="https://apis.google.com/js/api.js" async defer></script>
+    <title>Hệ Thống Nộp Báo Cáo</title>
+    <!-- Tự tạo favicon để tránh lỗi 404 -->
+    <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iNCIgZmlsbD0iIzY2N2VlYSIvPgo8cGF0aCBkPSJNOCA4aDEydjJ2LTJIMjBWMTJIMTZWMTZoLTRWMTJIOFY4eiIgZmlsbD0id2hpdGUiLz4KPC9zdmc+">
+    
     <style>
         * {
             margin: 0;
@@ -337,59 +339,114 @@
             100% { transform: rotate(360deg); }
         }
 
-        .troubleshoot-panel {
+        .config-panel {
             background: #f1f3f4;
             border: 1px solid #dadce0;
             border-radius: 8px;
             padding: 20px;
             margin: 20px 0;
-            display: none;
         }
 
-        .troubleshoot-step {
-            margin: 10px 0;
+        .config-panel h3 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .config-group {
+            margin-bottom: 15px;
+        }
+
+        .config-group label {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .config-group input {
+            font-family: monospace;
+            font-size: 12px;
+        }
+
+        .config-status {
             padding: 10px;
-            background: white;
             border-radius: 6px;
-            border-left: 4px solid #4285f4;
+            margin: 10px 0;
+            font-size: 14px;
+        }
+
+        .config-status.invalid {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .config-status.valid {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>Hệ Thống Nộp BC</h1>
+            <h1>Hệ Thống Nộp Báo Cáo</h1>
             <p>Nộp báo cáo một cách nhanh chóng và hiệu quả</p>
         </div>
 
         <button class="btn debug-btn" onclick="toggleDebug()">Debug Console</button>
         
         <div class="debug-section" id="debugSection">
-            <div id="debugLog">Starting initialization...</div>
+            <div id="debugLog">Khởi tạo hệ thống...</div>
         </div>
 
         <div class="status-box status-loading" id="statusBox">
             <div class="spinner" style="width: 20px; height: 20px; display: inline-block; margin-right: 10px;"></div>
-            Đang khởi tạo Google APIs...
+            Đang kiểm tra cấu hình...
         </div>
 
-        <div class="troubleshoot-panel" id="troubleshootPanel">
-            <h3>Hướng dẫn khắc phục lỗi</h3>
-            <div class="troubleshoot-step">
-                <strong>1. Kiểm tra Chrome Extensions:</strong><br>
-                Tắt tất cả extensions hoặc thử Incognito mode
+        <!-- Panel cấu hình -->
+        <div class="config-panel" id="configPanel">
+            <h3>Cấu hình Google APIs</h3>
+            
+            <div class="config-group">
+                <label for="clientIdInput">OAuth Client ID:</label>
+                <input type="text" 
+                       id="clientIdInput" 
+                       placeholder="123456789012-abcdefghijklmnopqrstuvwxyz123456.apps.googleusercontent.com"
+                       value="">
+                <div class="config-status invalid" id="clientIdStatus">
+                    Cần OAuth Client ID (không phải API Key)
+                </div>
             </div>
-            <div class="troubleshoot-step">
-                <strong>2. Kiểm tra Console Errors:</strong><br>
-                Mở DevTools > Console để xem chi tiết lỗi
+
+            <div class="config-group">
+                <label for="spreadsheetIdInput">Google Sheets ID:</label>
+                <input type="text" 
+                       id="spreadsheetIdInput" 
+                       placeholder="1JVXMPoAC9QmD_YmCamhY9iqgUsoH1wo1laCvFg9Z-vE"
+                       value="1JVXMPoAC9QmD_YmCamhY9iqgUsoH1wo1laCvFg9Z-vE">
             </div>
-            <div class="troubleshoot-step">
-                <strong>3. Thử HTTPS:</strong><br>
-                Sử dụng ngrok hoặc host trên HTTPS domain
+
+            <div class="config-group">
+                <label for="folderIdInput">Parent Folder ID trong Drive:</label>
+                <input type="text" 
+                       id="folderIdInput" 
+                       placeholder="1cGPO867sCGWI48K2ypCDBM2ZYWbyLGsq"
+                       value="1cGPO867sCGWI48K2ypCDBM2ZYWbyLGsq">
             </div>
-            <div class="troubleshoot-step">
-                <strong>4. Alternative Solution:</strong><br>
-                <button class="btn" onclick="switchToDemo()">Chuyển sang Demo Mode</button>
+
+            <button class="btn" onclick="saveConfigAndInit()" id="saveConfigBtn">
+                Lưu Cấu Hình và Khởi Tạo
+            </button>
+
+            <div style="margin-top: 15px; padding: 12px; background: #e3f2fd; border-radius: 6px; font-size: 13px;">
+                <strong>Hướng dẫn lấy OAuth Client ID:</strong><br>
+                1. Vào <a href="https://console.cloud.google.com/apis/credentials" target="_blank">Google Cloud Console</a><br>
+                2. Chọn "Create Credentials" > "OAuth 2.0 Client ID"<br>
+                3. Application type: "Web application"<br>
+                4. Authorized JavaScript origins: thêm domain của bạn<br>
+                5. Copy Client ID có dạng: xxx.apps.googleusercontent.com
             </div>
         </div>
 
@@ -442,17 +499,18 @@
         </div>
     </div>
 
+    <!-- Load Google APIs -->
+    <script src="https://apis.google.com/js/api.js"></script>
+
     <script>
-        // Cấu hình
-        const CONFIG = {
-            CLIENT_ID: 'AIzaSyAHUdJ7bykPbOs7hgBQ09t8oSs-M2GrFG8',
+        // Biến global
+        let CONFIG = {
+            CLIENT_ID: '',
             SPREADSHEET_ID: '1JVXMPoAC9QmD_YmCamhY9iqgUsoH1wo1laCvFg9Z-vE',
             PARENT_FOLDER_ID: '1cGPO867sCGWI48K2ypCDBM2ZYWbyLGsq',
             SCOPES: 'https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/drive.file'
         };
 
-        // Biến global
-        let gapi, google;
         let authInstance = null;
         let currentUser = null;
         let reportData = [];
@@ -485,36 +543,128 @@
             statusBox.innerHTML = message;
         }
 
-        // Khởi tạo khi window load
+        // Khởi tạo khi trang load
         window.addEventListener('load', function() {
-            debugLog('Window loaded, waiting for GAPI...');
-            waitForGAPI();
+            debugLog('Trang đã load, kiểm tra cấu hình...');
+            loadSavedConfig();
+            checkConfiguration();
         });
 
-        function waitForGAPI() {
-            if (typeof gapi !== 'undefined') {
-                debugLog('GAPI is available, starting initialization');
-                initializeGoogleAPI();
-            } else {
-                debugLog('Waiting for GAPI to load...');
+        function loadSavedConfig() {
+            // Load từ localStorage
+            const saved = localStorage.getItem('googleApiConfig');
+            if (saved) {
+                try {
+                    const config = JSON.parse(saved);
+                    document.getElementById('clientIdInput').value = config.clientId || '';
+                    document.getElementById('spreadsheetIdInput').value = config.spreadsheetId || CONFIG.SPREADSHEET_ID;
+                    document.getElementById('folderIdInput').value = config.folderId || CONFIG.PARENT_FOLDER_ID;
+                    
+                    CONFIG.CLIENT_ID = config.clientId || '';
+                    CONFIG.SPREADSHEET_ID = config.spreadsheetId || CONFIG.SPREADSHEET_ID;
+                    CONFIG.PARENT_FOLDER_ID = config.folderId || CONFIG.PARENT_FOLDER_ID;
+                } catch (e) {
+                    debugLog('Lỗi load cấu hình: ' + e.message, 'error');
+                }
+            }
+        }
+
+        function saveConfigAndInit() {
+            const clientId = document.getElementById('clientIdInput').value.trim();
+            const spreadsheetId = document.getElementById('spreadsheetIdInput').value.trim();
+            const folderId = document.getElementById('folderIdInput').value.trim();
+
+            if (!clientId) {
+                showNotification('Vui lòng nhập OAuth Client ID', 'error');
+                return;
+            }
+
+            if (!validateClientId(clientId)) {
+                showNotification('Client ID không đúng định dạng. Phải có dạng: xxx.apps.googleusercontent.com', 'error');
+                return;
+            }
+
+            // Lưu config
+            CONFIG.CLIENT_ID = clientId;
+            CONFIG.SPREADSHEET_ID = spreadsheetId;
+            CONFIG.PARENT_FOLDER_ID = folderId;
+
+            const configToSave = {
+                clientId: clientId,
+                spreadsheetId: spreadsheetId,
+                folderId: folderId
+            };
+
+            localStorage.setItem('googleApiConfig', JSON.stringify(configToSave));
+            
+            // Ẩn config panel
+            document.getElementById('configPanel').style.display = 'none';
+            
+            debugLog('Cấu hình đã lưu, bắt đầu khởi tạo APIs', 'success');
+            initializeGoogleAPI();
+        }
+
+        function validateClientId(clientId) {
+            return clientId && clientId.includes('.apps.googleusercontent.com');
+        }
+
+        function checkConfiguration() {
+            const clientId = document.getElementById('clientIdInput').value.trim();
+            const statusElement = document.getElementById('clientIdStatus');
+
+            if (!clientId) {
+                statusElement.textContent = 'Cần OAuth Client ID (không phải API Key)';
+                statusElement.className = 'config-status invalid';
+                updateStatus('error', 'Cần cấu hình OAuth Client ID');
+                return false;
+            }
+
+            if (!validateClientId(clientId)) {
+                statusElement.textContent = 'Client ID không đúng định dạng';
+                statusElement.className = 'config-status invalid';
+                updateStatus('error', 'Client ID không đúng định dạng');
+                return false;
+            }
+
+            statusElement.textContent = 'Client ID hợp lệ';
+            statusElement.className = 'config-status valid';
+            return true;
+        }
+
+        // Listen cho thay đổi trong input
+        document.addEventListener('DOMContentLoaded', function() {
+            const clientIdInput = document.getElementById('clientIdInput');
+            if (clientIdInput) {
+                clientIdInput.addEventListener('input', checkConfiguration);
+            }
+        });
+
+        function initializeGoogleAPI() {
+            if (!CONFIG.CLIENT_ID) {
+                updateStatus('error', 'Chưa cấu hình Client ID');
+                return;
+            }
+
+            debugLog('Bắt đầu khởi tạo Google API...');
+            updateStatus('loading', 'Đang khởi tạo Google APIs...');
+
+            if (typeof gapi === 'undefined') {
+                debugLog('GAPI chưa load, đang chờ...', 'info');
                 setTimeout(() => {
                     initAttempts++;
                     if (initAttempts < MAX_INIT_ATTEMPTS) {
-                        waitForGAPI();
+                        initializeGoogleAPI();
                     } else {
                         handleInitFailure();
                     }
                 }, 1000);
+                return;
             }
-        }
 
-        function initializeGoogleAPI() {
-            debugLog('Loading GAPI modules...');
-            
             gapi.load('auth2:client', {
                 callback: initClient,
                 onerror: function(error) {
-                    debugLog('Failed to load GAPI modules: ' + JSON.stringify(error), 'error');
+                    debugLog('Lỗi load GAPI modules: ' + JSON.stringify(error), 'error');
                     handleInitFailure();
                 }
             });
@@ -522,7 +672,7 @@
 
         async function initClient() {
             try {
-                debugLog('Initializing GAPI client...');
+                debugLog('Khởi tạo GAPI client...');
                 
                 await gapi.client.init({
                     clientId: CONFIG.CLIENT_ID,
@@ -533,7 +683,7 @@
                     ]
                 });
 
-                debugLog('GAPI client initialized successfully', 'success');
+                debugLog('GAPI client đã khởi tạo thành công', 'success');
                 
                 authInstance = gapi.auth2.getAuthInstance();
                 
@@ -546,19 +696,19 @@
                 updateStatus('ready', 'Sẵn sàng đăng nhập');
                 
             } catch (error) {
-                debugLog('Client initialization failed: ' + error.message, 'error');
+                debugLog('Lỗi khởi tạo client: ' + error.message, 'error');
                 handleInitFailure();
             }
         }
 
         function updateSignInStatus(isSignedIn) {
-            debugLog(`Sign-in status changed: ${isSignedIn}`);
+            debugLog(`Trạng thái đăng nhập: ${isSignedIn}`);
             
             if (isSignedIn) {
                 currentUser = authInstance.currentUser.get();
                 const profile = currentUser.getBasicProfile();
                 
-                debugLog(`Signed in as: ${profile.getEmail()}`, 'success');
+                debugLog(`Đã đăng nhập: ${profile.getEmail()}`, 'success');
                 
                 document.getElementById('loginSection').classList.remove('active');
                 document.getElementById('uploadSection').classList.add('active');
@@ -573,7 +723,7 @@
                 setupFileHandlers();
                 
             } else {
-                debugLog('User not signed in');
+                debugLog('Chưa đăng nhập');
                 document.getElementById('loginSection').classList.add('active');
                 document.getElementById('uploadSection').classList.remove('active');
                 document.getElementById('signInBtn').disabled = false;
@@ -586,75 +736,37 @@
                 return;
             }
             
-            debugLog('Attempting sign in...');
+            debugLog('Đang thử đăng nhập...');
             authInstance.signIn().catch(error => {
-                debugLog('Sign in error: ' + error.error, 'error');
+                debugLog('Lỗi đăng nhập: ' + error.error, 'error');
                 showNotification('Lỗi đăng nhập: ' + error.error, 'error');
             });
         }
 
         function handleInitFailure() {
-            debugLog('Initialization failed after multiple attempts', 'error');
+            debugLog('Khởi tạo thất bại sau nhiều lần thử', 'error');
             updateStatus('error', 'Không thể khởi tạo Google APIs');
-            document.getElementById('troubleshootPanel').style.display = 'block';
             
             showNotification(
-                'Không thể kết nối Google APIs. Có thể do:\n' +
-                '• Browser security policies\n' +
-                '• Network/firewall issues\n' +
-                '• OAuth configuration\n\n' +
-                'Vui lòng thử Demo mode hoặc kiểm tra troubleshooting panel.',
+                'Không thể kết nối Google APIs. Vui lòng kiểm tra:\n' +
+                '• Client ID có đúng không\n' +
+                '• Domain đã được add vào OAuth settings\n' +
+                '• Network connection\n' +
+                '• Browser cho phép third-party cookies',
                 'error'
             );
         }
 
-        function switchToDemo() {
-            debugLog('Switching to demo mode', 'info');
-            updateStatus('ready', 'Demo Mode - Không cần Google APIs');
-            
-            // Simulate demo user
-            document.getElementById('loginSection').classList.remove('active');
-            document.getElementById('uploadSection').classList.add('active');
-            document.getElementById('statusBox').style.display = 'none';
-            document.getElementById('troubleshootPanel').style.display = 'none';
-            
-            document.getElementById('userInfo').innerHTML = `
-                <strong>Demo User</strong><br>
-                <small>demo@example.com</small><br>
-                <em style="color: #ffa500;">Demo mode - không upload thật</em>
-            `;
-            
-            loadDemoData();
-            setupFileHandlers();
-        }
-
-        function loadDemoData() {
-            debugLog('Loading demo data...');
-            
-            // Demo data
-            reportData = [
-                ['1', 'Phòng Tài Chính', 'Đại học Bách Khoa', 'Báo cáo tài chính quý III', 'TC_Q3_2024', 'Chờ'],
-                ['2', 'Ban Giám Hiệu', 'Đại học Bách Khoa', 'Báo cáo hoạt động tháng 8', 'BGH_T8_2024', 'Chờ'],
-                ['3', 'Phòng Đào Tạo', 'Đại học Bách Khoa', 'Báo cáo học vụ học kỳ 1', 'DT_HK1_2024', 'Chờ']
-            ];
-            
-            submissionHistory = [
-                ['demo@example.com', 'BGH_T8_2024', '24/08/2024 14:30', 'DHBK_BGH_T8_2024_demo.pdf']
-            ];
-            
-            displayReports();
-        }
-
         async function loadData() {
             try {
-                debugLog('Loading data from Google Sheets...');
+                debugLog('Đang tải dữ liệu từ Google Sheets...');
                 
                 const recipientsResponse = await gapi.client.sheets.spreadsheets.values.get({
                     spreadsheetId: CONFIG.SPREADSHEET_ID,
                     range: 'NguoiNhan!A:F'
                 });
                 
-                debugLog('Recipients data loaded', 'success');
+                debugLog('Dữ liệu người nhận đã tải', 'success');
 
                 let historyResponse;
                 try {
@@ -662,9 +774,9 @@
                         spreadsheetId: CONFIG.SPREADSHEET_ID,
                         range: 'LichSuNop!A:D'
                     });
-                    debugLog('History data loaded', 'success');
+                    debugLog('Dữ liệu lịch sử đã tải', 'success');
                 } catch (error) {
-                    debugLog('Creating LichSuNop sheet...', 'info');
+                    debugLog('Tạo sheet LichSuNop...', 'info');
                     await createHistorySheet();
                     historyResponse = { result: { values: [] } };
                 }
@@ -672,7 +784,7 @@
                 processData(recipientsResponse.result.values || [], historyResponse.result.values || []);
                 
             } catch (error) {
-                debugLog('Data loading error: ' + error.message, 'error');
+                debugLog('Lỗi tải dữ liệu: ' + error.message, 'error');
                 showNotification('Lỗi tải dữ liệu: ' + error.message, 'error');
             }
         }
@@ -683,7 +795,7 @@
             reportData = recipients.slice(1).filter(row => row && row.length >= 6 && row[5] === 'Chờ');
             submissionHistory = history.slice(1).filter(row => row && row.length >= 2 && row[0] === userEmail);
             
-            debugLog(`Processed: ${reportData.length} reports, ${submissionHistory.length} submissions`);
+            debugLog(`Đã xử lý: ${reportData.length} báo cáo, ${submissionHistory.length} lần nộp`);
             displayReports();
         }
 
@@ -699,7 +811,7 @@
                 return;
             }
 
-            const userEmail = currentUser ? currentUser.getBasicProfile().getEmail() : 'demo@example.com';
+            const userEmail = currentUser ? currentUser.getBasicProfile().getEmail() : '';
             
             reportList.innerHTML = reportData.map((report, index) => {
                 const [stt, tenNguoiNhan, donVi, loaiBaoCao, kiHieu] = report;
@@ -788,7 +900,7 @@
                     <small>Kích thước: ${formatFileSize(file.size)}</small>
                 `;
                 
-                debugLog(`File selected: ${file.name}`);
+                debugLog(`File đã chọn: ${file.name}`);
             } else {
                 selectedFileDiv.innerHTML = '';
             }
@@ -823,18 +935,13 @@
             
             try {
                 showProgress(true);
-                debugLog('Starting submission process...');
+                debugLog('Bắt đầu quá trình nộp báo cáo...');
                 
-                // Simulate or real upload
-                if (authInstance && gapi.client) {
-                    await performRealUpload(schoolName, file, selectedReport);
-                } else {
-                    await performDemoUpload(schoolName, file, selectedReport);
-                }
+                await performRealUpload(schoolName, file, selectedReport);
                 
             } catch (error) {
                 showProgress(false);
-                debugLog('Submission failed: ' + error.message, 'error');
+                debugLog('Nộp báo cáo thất bại: ' + error.message, 'error');
                 showNotification('Lỗi nộp báo cáo: ' + error.message, 'error');
             }
         }
@@ -846,15 +953,15 @@
             const newFileName = `${schoolName}_${kiHieu}_${timestamp}${fileExtension}`;
             
             updateProgress(20);
-            debugLog(`Finding/creating folder: ${kiHieu}`);
+            debugLog(`Tìm/tạo thư mục: ${kiHieu}`);
             const targetFolderId = await findOrCreateSubfolder(kiHieu);
             
             updateProgress(50);
-            debugLog('Uploading file...');
+            debugLog('Đang tải file lên...');
             await uploadFileToFolder(file, newFileName, targetFolderId);
             
             updateProgress(80);
-            debugLog('Recording submission...');
+            debugLog('Ghi lại lịch sử nộp...');
             await recordSubmission(currentUser.getBasicProfile().getEmail(), kiHieu, newFileName);
             
             updateProgress(100);
@@ -866,39 +973,7 @@
             loadData();
         }
 
-        async function performDemoUpload(schoolName, file, selectedReport) {
-            const [stt, tenNguoiNhan, donVi, loaiBaoCao, kiHieu] = selectedReport;
-            const timestamp = new Date().toISOString().replace(/[-:]/g, '').slice(0, 15);
-            const fileExtension = '.' + file.name.split('.').pop();
-            const newFileName = `${schoolName}_${kiHieu}_${timestamp}${fileExtension}`;
-            
-            updateProgress(25);
-            await sleep(500);
-            
-            updateProgress(50);
-            await sleep(500);
-            
-            updateProgress(75);
-            await sleep(500);
-            
-            updateProgress(100);
-            showProgress(false);
-            
-            // Add to demo history
-            submissionHistory.push([
-                'demo@example.com',
-                kiHieu,
-                new Date().toLocaleString('vi-VN'),
-                newFileName
-            ]);
-            
-            showNotification(`Demo: Nộp báo cáo thành công!\nFile: ${newFileName}\nNơi nhận: ${tenNguoiNhan}`, 'success');
-            
-            resetForm();
-            displayReports();
-        }
-
-        // Google Drive operations (giữ nguyên từ version gốc)
+        // Google Drive operations
         async function findOrCreateSubfolder(kiHieu) {
             const response = await gapi.client.drive.files.list({
                 q: `name='${kiHieu}' and parents in '${CONFIG.PARENT_FOLDER_ID}' and mimeType='application/vnd.google-apps.folder'`,
@@ -1041,10 +1116,6 @@
             
             document.querySelectorAll('input[name="selectedReport"]').forEach(radio => radio.checked = false);
             validateForm();
-        }
-
-        function sleep(ms) {
-            return new Promise(resolve => setTimeout(resolve, ms));
         }
     </script>
 </body>
