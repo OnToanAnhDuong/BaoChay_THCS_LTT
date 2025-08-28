@@ -28,7 +28,7 @@
             border-radius: 15px;
             box-shadow: 0 20px 40px rgba(0,0,0,0.1);
             padding: 40px;
-            max-width: 600px;
+            max-width: 700px;
             width: 100%;
         }
 
@@ -74,6 +74,12 @@
             border-left: 4px solid #dc3545;
         }
 
+        .status-demo {
+            background: #e2e3e5;
+            color: #383d41;
+            border-left: 4px solid #6c757d;
+        }
+
         .debug-section {
             background: #f8f9fa;
             border: 1px solid #dee2e6;
@@ -101,6 +107,11 @@
             color: #17a2b8;
         }
 
+        .debug-warning {
+            color: #856404;
+            font-weight: bold;
+        }
+
         .form-group {
             margin-bottom: 25px;
         }
@@ -112,18 +123,24 @@
             color: #333;
         }
 
-        input[type="text"], select {
+        input[type="text"], select, textarea {
             width: 100%;
             padding: 12px 16px;
             border: 2px solid #e1e5e9;
             border-radius: 8px;
             font-size: 16px;
             transition: border-color 0.3s ease;
+            font-family: inherit;
         }
 
-        input[type="text"]:focus, select:focus {
+        input[type="text"]:focus, select:focus, textarea:focus {
             outline: none;
             border-color: #667eea;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
         }
 
         .file-input-container {
@@ -134,7 +151,7 @@
 
         .file-input {
             width: 100%;
-            padding: 12px 16px;
+            padding: 20px 16px;
             border: 2px dashed #e1e5e9;
             border-radius: 8px;
             text-align: center;
@@ -151,6 +168,7 @@
         .file-input.dragover {
             border-color: #667eea;
             background: #e8f0ff;
+            border-style: solid;
         }
 
         input[type="file"] {
@@ -161,8 +179,18 @@
             cursor: pointer;
         }
 
+        .selected-file {
+            margin-top: 15px;
+            padding: 10px;
+            background: #e8f5e8;
+            border-radius: 6px;
+            font-size: 14px;
+            color: #155724;
+            display: none;
+        }
+
         .report-list {
-            max-height: 300px;
+            max-height: 350px;
             overflow-y: auto;
             border: 2px solid #e1e5e9;
             border-radius: 8px;
@@ -173,27 +201,30 @@
         .report-item {
             display: flex;
             align-items: center;
-            padding: 12px;
-            margin-bottom: 10px;
+            padding: 15px;
+            margin-bottom: 12px;
             background: white;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
             transition: all 0.3s ease;
+            cursor: pointer;
         }
 
-        .report-item:hover {
+        .report-item:hover:not(.submitted) {
             transform: translateY(-2px);
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            border: 2px solid #667eea;
         }
 
         .report-item.submitted {
             background: #e8f5e8;
-            opacity: 0.7;
+            opacity: 0.8;
+            cursor: not-allowed;
         }
 
         .report-item input[type="radio"] {
-            margin-right: 12px;
-            transform: scale(1.2);
+            margin-right: 15px;
+            transform: scale(1.3);
         }
 
         .report-info {
@@ -203,18 +234,31 @@
         .report-title {
             font-weight: 600;
             color: #333;
-            margin-bottom: 4px;
+            margin-bottom: 5px;
+            font-size: 16px;
         }
 
         .report-recipient {
             font-size: 14px;
             color: #666;
+            margin-bottom: 3px;
+        }
+
+        .report-code {
+            font-size: 12px;
+            color: #007bff;
+            font-weight: 500;
+            background: #e3f2fd;
+            padding: 2px 6px;
+            border-radius: 3px;
+            display: inline-block;
         }
 
         .report-status {
             font-size: 12px;
             color: #28a745;
             font-style: italic;
+            margin-top: 5px;
         }
 
         .btn {
@@ -230,7 +274,7 @@
             width: 100%;
         }
 
-        .btn:hover {
+        .btn:hover:not(:disabled) {
             transform: translateY(-2px);
             box-shadow: 0 8px 16px rgba(102, 126, 234, 0.3);
         }
@@ -242,15 +286,25 @@
             box-shadow: none;
         }
 
-        .login-btn {
+        .btn-google {
             background: #4285f4;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
 
-        .debug-btn {
+        .btn-demo {
+            background: #6c757d;
+            padding: 10px 20px;
+            font-size: 14px;
+            width: auto;
+            margin: 10px auto;
+            display: block;
+        }
+
+        .btn-debug {
             background: #6c757d;
             padding: 8px 16px;
             font-size: 12px;
+            width: auto;
             margin-bottom: 15px;
         }
 
@@ -262,21 +316,31 @@
             display: block;
         }
 
-        .progress-bar {
-            width: 100%;
-            height: 6px;
-            background: #e1e5e9;
-            border-radius: 3px;
-            overflow: hidden;
+        .progress-container {
             margin: 20px 0;
             display: none;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e1e5e9;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 10px;
         }
 
         .progress-fill {
             height: 100%;
             background: linear-gradient(90deg, #667eea, #764ba2);
             width: 0%;
-            transition: width 0.3s ease;
+            transition: width 0.5s ease;
+        }
+
+        .progress-text {
+            font-size: 14px;
+            color: #666;
+            text-align: center;
         }
 
         .notification {
@@ -284,6 +348,8 @@
             border-radius: 8px;
             margin: 20px 0;
             display: none;
+            font-size: 14px;
+            line-height: 1.5;
         }
 
         .notification.success {
@@ -304,12 +370,29 @@
             border: 1px solid #bee5eb;
         }
 
+        .notification.warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+
         .user-info {
-            background: #e8f0ff;
-            padding: 15px;
+            background: linear-gradient(135deg, #e8f0ff, #f0f4ff);
+            padding: 20px;
             border-radius: 8px;
             margin-bottom: 25px;
             text-align: center;
+            border: 1px solid #bbdefb;
+        }
+
+        .user-info h3 {
+            color: #1565c0;
+            margin-bottom: 5px;
+        }
+
+        .user-info p {
+            color: #666;
+            margin: 0;
         }
 
         .loading {
@@ -334,8 +417,43 @@
         }
 
         .platform-info {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+            font-size: 14px;
+        }
+
+        .platform-info strong {
+            color: #495057;
+        }
+
+        .oauth-setup {
             background: #e3f2fd;
             border: 1px solid #bbdefb;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+            font-size: 14px;
+        }
+
+        .oauth-step {
+            margin: 8px 0;
+            padding-left: 15px;
+        }
+
+        .oauth-step::before {
+            content: "•";
+            color: #2196f3;
+            font-weight: bold;
+            margin-right: 8px;
+            margin-left: -15px;
+        }
+
+        .demo-mode-info {
+            background: #fff8e1;
+            border: 1px solid #ffcc02;
             border-radius: 8px;
             padding: 15px;
             margin: 15px 0;
@@ -343,9 +461,73 @@
             text-align: center;
         }
 
-        .demo-option {
-            margin-top: 15px;
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
             text-align: center;
+            border: 1px solid #dee2e6;
+        }
+
+        .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #666;
+        }
+
+        .empty-state .icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+            opacity: 0.3;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+                margin: 10px;
+            }
+
+            .header h1 {
+                font-size: 24px;
+            }
+
+            .report-item {
+                padding: 12px;
+            }
+
+            .stats {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        /* Animation for smooth transitions */
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
     </style>
 </head>
@@ -356,7 +538,7 @@
             <p>Nộp báo cáo một cách nhanh chóng và hiệu quả</p>
         </div>
 
-        <button class="btn debug-btn" onclick="toggleDebug()">Debug Console</button>
+        <button class="btn btn-debug" onclick="toggleDebug()">Xem Debug Log</button>
         
         <div class="debug-section" id="debugSection">
             <div id="debugLog">Khởi tạo hệ thống...</div>
@@ -368,20 +550,31 @@
         </div>
 
         <div class="platform-info">
-            <strong>Platform:</strong> Vercel Deployment<br>
-            <strong>OAuth Client ID:</strong> Configured ✓<br>
-            <strong>Domain:</strong> <span id="currentDomain">Đang xác định...</span>
+            <strong>Nền tảng:</strong> <span id="platformName">Đang xác định...</span><br>
+            <strong>Domain:</strong> <span id="currentDomain">...</span><br>
+            <strong>OAuth Client ID:</strong> <span style="font-family: monospace; font-size: 12px;">Đã cấu hình</span>
         </div>
 
         <!-- Phần đăng nhập -->
         <div class="login-section" id="loginSection">
-            <button class="btn login-btn" id="signInBtn" onclick="performSignIn()" disabled>
-                Đăng nhập với Google
+            <button class="btn btn-google" id="signInBtn" onclick="performSignIn()" disabled>
+                <span>🔐</span> Đăng nhập với Google
             </button>
-            <div class="demo-option">
-                <button class="btn debug-btn" onclick="switchToDemo()" style="width: auto; padding: 10px 20px;">
-                    Demo Mode (Không cần đăng nhập)
-                </button>
+            
+            <div style="text-align: center; margin: 15px 0; color: #666;">
+                hoặc
+            </div>
+            
+            <button class="btn btn-demo" onclick="switchToDemo()">
+                <span>🎭</span> Chế độ Demo (Không cần đăng nhập)
+            </button>
+
+            <div class="oauth-setup" id="oauthHelp" style="display: none;">
+                <strong>Hướng dẫn khắc phục lỗi OAuth:</strong>
+                <div class="oauth-step">Vào <a href="https://console.cloud.google.com/apis/credentials" target="_blank">Google Cloud Console</a></div>
+                <div class="oauth-step">Chọn OAuth Client ID: <code>1076801839575...</code></div>
+                <div class="oauth-step">Thêm domain này vào "Authorized JavaScript origins"</div>
+                <div class="oauth-step">Lưu và đợi 5-10 phút để Google cập nhật</div>
             </div>
         </div>
 
@@ -389,25 +582,55 @@
         <div class="upload-section" id="uploadSection">
             <div class="user-info" id="userInfo"></div>
 
-            <div class="form-group">
-                <label for="schoolName">Tên trường (viết tắt):</label>
-                <input type="text" id="schoolName" placeholder="VD: DHBK, DHKT..." required>
+            <div class="stats" id="statsSection">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalReports">0</div>
+                    <div class="stat-label">Tổng báo cáo</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="submittedReports">0</div>
+                    <div class="stat-label">Đã nộp</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="pendingReports">0</div>
+                    <div class="stat-label">Chờ nộp</div>
+                </div>
             </div>
 
             <div class="form-group">
-                <label for="reportFile">Chọn file báo cáo:</label>
+                <label for="schoolName">
+                    <span>🏫</span> Tên trường (viết tắt):
+                </label>
+                <input type="text" 
+                       id="schoolName" 
+                       placeholder="VD: DHBK, DHKT, HCMUS..." 
+                       required>
+            </div>
+
+            <div class="form-group">
+                <label for="reportFile">
+                    <span>📄</span> Chọn file báo cáo:
+                </label>
                 <div class="file-input-container">
                     <div class="file-input" id="fileInputArea">
-                        <span>Click để chọn file hoặc kéo thả file vào đây</span>
-                        <br><small>Chỉ nhận: PDF, DOC, DOCX, XLS, XLSX, MP4</small>
+                        <div style="font-size: 18px; margin-bottom: 10px;">📁</div>
+                        <div><strong>Kéo thả file vào đây</strong> hoặc <span style="color: #667eea; text-decoration: underline;">click để chọn</span></div>
+                        <div style="margin-top: 8px; font-size: 14px; color: #666;">
+                            Hỗ trợ: PDF, DOC, DOCX, XLS, XLSX, MP4 (tối đa 50MB)
+                        </div>
                     </div>
-                    <input type="file" id="reportFile" accept=".pdf,.doc,.docx,.xls,.xlsx,.mp4" required>
+                    <input type="file" 
+                           id="reportFile" 
+                           accept=".pdf,.doc,.docx,.xls,.xlsx,.mp4" 
+                           required>
                 </div>
-                <div id="selectedFile" style="margin-top: 10px; font-size: 14px; color: #666;"></div>
+                <div class="selected-file" id="selectedFile"></div>
             </div>
 
             <div class="form-group">
-                <label>Chọn báo cáo cần nộp:</label>
+                <label>
+                    <span>📋</span> Chọn báo cáo cần nộp:
+                </label>
                 <div class="loading" id="loadingReports">
                     <div class="spinner"></div>
                     Đang tải danh sách báo cáo...
@@ -415,12 +638,15 @@
                 <div class="report-list" id="reportList" style="display: none;"></div>
             </div>
 
-            <div class="progress-bar" id="progressBar">
-                <div class="progress-fill" id="progressFill"></div>
+            <div class="progress-container" id="progressContainer">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <div class="progress-text" id="progressText">Đang chuẩn bị...</div>
             </div>
 
             <button class="btn" id="submitBtn" onclick="submitReport()" disabled>
-                Nộp Báo Cáo
+                <span>🚀</span> Nộp Báo Cáo
             </button>
 
             <div class="notification" id="notification"></div>
@@ -431,7 +657,7 @@
     <script src="https://apis.google.com/js/api.js"></script>
 
     <script>
-        // Cấu hình với OAuth Client ID đã có
+        // Cấu hình hệ thống
         const CONFIG = {
             CLIENT_ID: '1076801839575-pcqpsrg4k9al4p2c8fer9pfrntef1315.apps.googleusercontent.com',
             SPREADSHEET_ID: '1JVXMPoAC9QmD_YmCamhY9iqgUsoH1wo1laCvFg9Z-vE',
@@ -439,31 +665,34 @@
             SCOPES: 'https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/drive.file'
         };
 
+        // Biến toàn cục
         let authInstance = null;
         let currentUser = null;
         let reportData = [];
         let submissionHistory = [];
         let initAttempts = 0;
-        const MAX_INIT_ATTEMPTS = 3;
         let isDemoMode = false;
+        const MAX_INIT_ATTEMPTS = 5;
 
-        // Debug functions
+        // Hàm debug và logging
         function debugLog(message, type = 'info') {
-            const timestamp = new Date().toLocaleTimeString();
+            const timestamp = new Date().toLocaleTimeString('vi-VN');
             const logElement = document.getElementById('debugLog');
             const className = `debug-${type}`;
             
             console.log(`[${timestamp}] ${message}`);
             
             if (logElement) {
-                logElement.innerHTML += `<div class="${className}">[${timestamp}] ${message}</div>`;
+                const logLine = `<div class="${className}">[${timestamp}] ${message}</div>`;
+                logElement.innerHTML += logLine;
                 logElement.scrollTop = logElement.scrollHeight;
             }
         }
 
         function toggleDebug() {
             const debugSection = document.getElementById('debugSection');
-            debugSection.style.display = debugSection.style.display === 'none' ? 'block' : 'none';
+            const isHidden = debugSection.style.display === 'none';
+            debugSection.style.display = isHidden ? 'block' : 'none';
         }
 
         function updateStatus(type, message) {
@@ -472,14 +701,35 @@
             statusBox.innerHTML = message;
         }
 
+        function showSection(sectionName) {
+            document.querySelectorAll('.login-section, .upload-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            document.getElementById(sectionName).classList.add('active');
+            document.getElementById('statusBox').style.display = 'none';
+        }
+
         // Khởi tạo khi trang load
         window.addEventListener('load', function() {
-            debugLog('Trang đã load trên Vercel');
+            debugLog('Trang web đã tải hoàn tất');
             
-            // Hiển thị domain hiện tại
-            document.getElementById('currentDomain').textContent = window.location.hostname;
+            // Cập nhật thông tin platform
+            const hostname = window.location.hostname;
+            const protocol = window.location.protocol;
+            document.getElementById('currentDomain').textContent = `${protocol}//${hostname}`;
             
-            // Bắt đầu khởi tạo Google API
+            if (hostname.includes('vercel.app')) {
+                document.getElementById('platformName').textContent = 'Vercel Deployment';
+            } else if (hostname === 'localhost' || hostname === '127.0.0.1') {
+                document.getElementById('platformName').textContent = 'Local Development';
+            } else {
+                document.getElementById('platformName').textContent = 'Custom Domain';
+            }
+
+            debugLog(`Platform: ${document.getElementById('platformName').textContent}`);
+            debugLog(`Domain: ${document.getElementById('currentDomain').textContent}`);
+            
+            // Khởi tạo Google API với retry logic
             initializeGoogleAPI();
         });
 
@@ -488,30 +738,31 @@
             updateStatus('loading', 'Đang khởi tạo Google APIs...');
 
             if (typeof gapi === 'undefined') {
-                debugLog('GAPI chưa load, đang chờ...', 'info');
-                setTimeout(() => {
+                debugLog(`GAPI chưa sẵn sàng, thử lại lần ${initAttempts + 1}/${MAX_INIT_ATTEMPTS}`, 'warning');
+                
+                if (initAttempts < MAX_INIT_ATTEMPTS) {
                     initAttempts++;
-                    if (initAttempts < MAX_INIT_ATTEMPTS) {
-                        initializeGoogleAPI();
-                    } else {
-                        handleInitFailure();
-                    }
-                }, 1000);
+                    setTimeout(initializeGoogleAPI, 2000);
+                } else {
+                    handleInitFailure('GAPI không thể tải sau nhiều lần thử');
+                }
                 return;
             }
 
+            debugLog('GAPI đã tải, bắt đầu load modules...');
+            
             gapi.load('auth2:client', {
                 callback: initClient,
                 onerror: function(error) {
-                    debugLog('Lỗi load GAPI modules: ' + JSON.stringify(error), 'error');
-                    handleInitFailure();
+                    debugLog('Lỗi khi load GAPI modules: ' + JSON.stringify(error), 'error');
+                    handleInitFailure('Không thể load Google API modules');
                 }
             });
         }
 
         async function initClient() {
             try {
-                debugLog('Khởi tạo GAPI client...');
+                debugLog('Khởi tạo Google API client...');
                 
                 await gapi.client.init({
                     clientId: CONFIG.CLIENT_ID,
@@ -522,123 +773,123 @@
                     ]
                 });
 
-                debugLog('GAPI client đã khởi tạo thành công', 'success');
+                debugLog('Google API client khởi tạo thành công', 'success');
                 
                 authInstance = gapi.auth2.getAuthInstance();
                 
-                // Listen for sign-in state changes
+                // Lắng nghe thay đổi trạng thái đăng nhập
                 authInstance.isSignedIn.listen(updateSignInStatus);
                 
-                // Handle initial sign-in state
-                updateSignInStatus(authInstance.isSignedIn.get());
+                // Xử lý trạng thái đăng nhập hiện tại
+                const isSignedIn = authInstance.isSignedIn.get();
+                debugLog(`Trạng thái đăng nhập ban đầu: ${isSignedIn}`);
+                updateSignInStatus(isSignedIn);
                 
-                updateStatus('ready', 'Sẵn sàng đăng nhập');
+                updateStatus('ready', 'Sẵn sàng đăng nhập với Google');
+                document.getElementById('signInBtn').disabled = false;
                 
             } catch (error) {
-                debugLog('Lỗi khởi tạo client: ' + error.message, 'error');
-                handleInitFailure();
+                debugLog('Lỗi khởi tạo Google API client: ' + error.message, 'error');
+                handleInitFailure('Lỗi OAuth: ' + error.message);
             }
         }
 
         function updateSignInStatus(isSignedIn) {
-            debugLog(`Trạng thái đăng nhập: ${isSignedIn}`);
+            debugLog(`Cập nhật trạng thái đăng nhập: ${isSignedIn}`);
             
             if (isSignedIn) {
                 currentUser = authInstance.currentUser.get();
                 const profile = currentUser.getBasicProfile();
                 
-                debugLog(`Đã đăng nhập: ${profile.getEmail()}`, 'success');
+                debugLog(`Đăng nhập thành công: ${profile.getEmail()}`, 'success');
                 
-                document.getElementById('loginSection').classList.remove('active');
-                document.getElementById('uploadSection').classList.add('active');
-                document.getElementById('statusBox').style.display = 'none';
+                showSection('uploadSection');
                 
+                // Hiển thị thông tin user
                 document.getElementById('userInfo').innerHTML = `
-                    <strong>Xin chào, ${profile.getName()}</strong><br>
-                    <small>${profile.getEmail()}</small>
+                    <h3>👤 ${profile.getName()}</h3>
+                    <p>${profile.getEmail()}</p>
+                    <div style="margin-top: 10px; font-size: 12px; color: #666;">
+                        Đã đăng nhập lúc ${new Date().toLocaleTimeString('vi-VN')}
+                    </div>
                 `;
                 
-                loadData();
+                // Tải dữ liệu và thiết lập handlers
+                loadDataFromSheets();
                 setupFileHandlers();
                 
             } else {
                 debugLog('Chưa đăng nhập');
-                document.getElementById('loginSection').classList.add('active');
-                document.getElementById('uploadSection').classList.remove('active');
+                showSection('loginSection');
                 document.getElementById('signInBtn').disabled = false;
             }
         }
 
         function performSignIn() {
             if (!authInstance) {
-                showNotification('Google API chưa sẵn sàng', 'error');
+                showNotification('Google API chưa sẵn sàng. Vui lòng thử lại hoặc sử dụng Demo Mode.', 'error');
                 return;
             }
             
-            debugLog('Đang thử đăng nhập...');
-            authInstance.signIn().catch(error => {
-                debugLog('Lỗi đăng nhập: ' + error.error, 'error');
-                showNotification('Lỗi đăng nhập: ' + error.error, 'error');
-            });
+            debugLog('Đang thực hiện đăng nhập...');
+            document.getElementById('signInBtn').disabled = true;
+            document.getElementById('signInBtn').innerHTML = '<span style="margin-right: 8px;">⏳</span>Đang đăng nhập...';
+            
+            authInstance.signIn()
+                .then(() => {
+                    debugLog('Đăng nhập thành công', 'success');
+                })
+                .catch(error => {
+                    debugLog('Lỗi đăng nhập: ' + error.error, 'error');
+                    showNotification('Lỗi đăng nhập: ' + error.error, 'error');
+                    
+                    // Reset button
+                    document.getElementById('signInBtn').disabled = false;
+                    document.getElementById('signInBtn').innerHTML = '<span>🔐</span> Đăng nhập với Google';
+                    
+                    // Hiển thị hướng dẫn OAuth
+                    document.getElementById('oauthHelp').style.display = 'block';
+                });
         }
 
-        function handleInitFailure() {
-            debugLog('Khởi tạo thất bại sau nhiều lần thử', 'error');
+        function handleInitFailure(reason) {
+            debugLog(`Khởi tạo thất bại: ${reason}`, 'error');
             updateStatus('error', 'Không thể khởi tạo Google APIs');
             
             showNotification(
-                'Không thể kết nối Google APIs. Có thể do:\n' +
-                '• OAuth Client ID chưa cấu hình đúng domain\n' +
-                '• Network/firewall issues\n' +
-                '• Google APIs service down\n\n' +
-                'Bạn có thể thử Demo Mode để test chức năng.',
+                `Không thể kết nối Google APIs: ${reason}\n\n` +
+                'Có thể do:\n' +
+                '• Domain chưa được thêm vào OAuth settings\n' +
+                '• Mạng chặn Google APIs\n' +
+                '• Cấu hình OAuth chưa đúng\n\n' +
+                'Bạn có thể sử dụng Demo Mode để test chức năng.',
                 'error'
             );
 
-            // Enable demo option
-            const statusBox = document.getElementById('statusBox');
-            statusBox.innerHTML = `
-                <div style="color: #721c24; margin-bottom: 15px;">
-                    Không thể khởi tạo Google APIs
-                </div>
-                <button class="btn" onclick="switchToDemo()" style="max-width: 200px; margin: 0 auto;">
-                    Chuyển sang Demo Mode
-                </button>
-            `;
+            // Hiển thị login với demo option
+            showSection('loginSection');
+            document.getElementById('signInBtn').disabled = true;
+            document.getElementById('oauthHelp').style.display = 'block';
         }
 
         function switchToDemo() {
-            debugLog('Chuyển sang demo mode', 'info');
+            debugLog('Chuyển sang chế độ Demo', 'info');
             isDemoMode = true;
-            updateStatus('ready', 'Demo Mode - Mô phỏng chức năng');
+            updateStatus('demo', 'Chế độ Demo - Mô phỏng đầy đủ chức năng');
             
-            document.getElementById('loginSection').classList.remove('active');
-            document.getElementById('uploadSection').classList.add('active');
-            document.getElementById('statusBox').style.display = 'none';
+            showSection('uploadSection');
             
+            // Thiết lập thông tin demo user
             document.getElementById('userInfo').innerHTML = `
-                <strong>Demo User</strong><br>
-                <small>demo@example.com</small><br>
-                <em style="color: #ffa500;">Demo mode - không upload thật</em>
+                <h3>🎭 Demo User</h3>
+                <p>demo@example.com</p>
+                <div class="demo-mode-info">
+                    <strong>Chế độ Demo</strong><br>
+                    Tất cả chức năng đều hoạt động bình thường, chỉ không upload thực tế lên Google Drive
+                </div>
             `;
             
-            loadDemoData();
-            setupFileHandlers();
-        }
-
-        function loadDemoData() {
-            debugLog('Loading demo data...');
-            
-            reportData = [
-                ['1', 'Phòng Tài Chính', 'Đại học Bách Khoa', 'Báo cáo tài chính quý III', 'TC_Q3_2024', 'Chờ'],
-                ['2', 'Ban Giám Hiệu', 'Đại học Bách Khoa', 'Báo cáo hoạt động tháng 8', 'BGH_T8_2024', 'Chờ'],
-                ['3', 'Phòng Đào Tạo', 'Đại học Bách Khoa', 'Báo cáo học vụ học kỳ 1', 'DT_HK1_2024', 'Chờ']
-            ];
-            
-            submissionHistory = [
-                ['demo@example.com', 'BGH_T8_2024', '24/08/2024 14:30', 'DHBK_BGH_T8_2024_demo.pdf']
-            ];
-            
+            // Mock current user cho demo
             currentUser = {
                 getBasicProfile: () => ({
                     getEmail: () => 'demo@example.com',
@@ -646,73 +897,113 @@
                 })
             };
             
+            loadDemoData();
+            setupFileHandlers();
+        }
+
+        function loadDemoData() {
+            debugLog('Tải dữ liệu demo...');
+            
+            // Dữ liệu demo mô phỏng thực tế
+            reportData = [
+                ['1', 'Phòng Tài Chính', 'Đại học Bách Khoa', 'Báo cáo tài chính quý III/2024', 'TC_Q3_2024', 'Chờ'],
+                ['2', 'Ban Giám Hiệu', 'Đại học Bách Khoa', 'Báo cáo hoạt động tháng 8/2024', 'BGH_T8_2024', 'Chờ'],
+                ['3', 'Phòng Đào Tạo', 'Đại học Bách Khoa', 'Báo cáo học vụ học kỳ I', 'DT_HK1_2024', 'Chờ'],
+                ['4', 'Phòng Khoa Học', 'Đại học Bách Khoa', 'Báo cáo nghiên cứu khoa học', 'NCKH_2024', 'Chờ'],
+                ['5', 'Phòng Hành Chính', 'Đại học Bách Khoa', 'Báo cáo nhân sự tháng 8', 'HC_T8_2024', 'Chờ']
+            ];
+            
+            // Lịch sử nộp mô phỏng (đã nộp một số báo cáo)
+            submissionHistory = [
+                ['demo@example.com', 'BGH_T8_2024', '25/08/2024 14:30', 'DHBK_BGH_T8_2024_demo.pdf'],
+                ['demo@example.com', 'HC_T8_2024', '26/08/2024 09:15', 'DHBK_HC_T8_2024_demo.xlsx']
+            ];
+            
+            debugLog(`Demo data: ${reportData.length} báo cáo, ${submissionHistory.length} đã nộp`);
             displayReports();
         }
 
-        async function loadData() {
+        async function loadDataFromSheets() {
             try {
                 debugLog('Đang tải dữ liệu từ Google Sheets...');
+                showLoadingReports(true);
                 
+                // Tải dữ liệu người nhận
                 const recipientsResponse = await gapi.client.sheets.spreadsheets.values.get({
                     spreadsheetId: CONFIG.SPREADSHEET_ID,
                     range: 'NguoiNhan!A:F'
                 });
                 
-                debugLog('Dữ liệu người nhận đã tải', 'success');
+                debugLog('Đã tải dữ liệu người nhận từ Sheet', 'success');
 
+                // Tải lịch sử nộp
                 let historyResponse;
                 try {
                     historyResponse = await gapi.client.sheets.spreadsheets.values.get({
                         spreadsheetId: CONFIG.SPREADSHEET_ID,
                         range: 'LichSuNop!A:D'
                     });
-                    debugLog('Dữ liệu lịch sử đã tải', 'success');
+                    debugLog('Đã tải lịch sử nộp từ Sheet', 'success');
                 } catch (error) {
-                    debugLog('Tạo sheet LichSuNop...', 'info');
+                    debugLog('Sheet LichSuNop không tồn tại, tạo mới...', 'warning');
                     await createHistorySheet();
-                    historyResponse = { result: { values: [] } };
+                    historyResponse = { result: { values: [['Email người nộp', 'Kí hiệu báo cáo', 'Ngày giờ nộp', 'Tên file']] } };
                 }
 
-                processData(recipientsResponse.result.values || [], historyResponse.result.values || []);
+                processSheetData(recipientsResponse.result.values || [], historyResponse.result.values || []);
                 
             } catch (error) {
-                debugLog('Lỗi tải dữ liệu: ' + error.message, 'error');
-                showNotification('Lỗi tải dữ liệu: ' + error.message, 'error');
+                debugLog('Lỗi tải dữ liệu từ Sheets: ' + error.message, 'error');
+                showNotification('Lỗi tải dữ liệu từ Google Sheets: ' + error.message, 'error');
+            } finally {
+                showLoadingReports(false);
             }
         }
 
-        function processData(recipients, history) {
+        function processSheetData(recipients, history) {
             const userEmail = currentUser.getBasicProfile().getEmail();
             
+            // Lọc báo cáo chờ nộp
             reportData = recipients.slice(1).filter(row => row && row.length >= 6 && row[5] === 'Chờ');
+            
+            // Lọc lịch sử của user hiện tại
             submissionHistory = history.slice(1).filter(row => row && row.length >= 2 && row[0] === userEmail);
             
-            debugLog(`Đã xử lý: ${reportData.length} báo cáo, ${submissionHistory.length} lần nộp`);
+            debugLog(`Đã xử lý: ${reportData.length} báo cáo chờ, ${submissionHistory.length} đã nộp`);
             displayReports();
         }
 
         function displayReports() {
             const reportList = document.getElementById('reportList');
-            const loadingReports = document.getElementById('loadingReports');
-            
-            if (loadingReports) loadingReports.style.display = 'none';
-            if (reportList) reportList.style.display = 'block';
+            showLoadingReports(false);
             
             if (reportData.length === 0) {
-                reportList.innerHTML = '<p style="text-align: center; color: #666;">Không có báo cáo nào đang chờ nộp.</p>';
+                reportList.innerHTML = `
+                    <div class="empty-state">
+                        <div class="icon">📄</div>
+                        <h3>Không có báo cáo nào</h3>
+                        <p>Hiện tại không có báo cáo nào cần nộp.</p>
+                    </div>
+                `;
+                updateStats(0, 0, 0);
                 return;
             }
 
-            const userEmail = currentUser ? currentUser.getBasicProfile().getEmail() : '';
+            const userEmail = currentUser ? currentUser.getBasicProfile().getEmail() : 'demo@example.com';
+            let submittedCount = 0;
             
-            reportList.innerHTML = reportData.map((report, index) => {
+            const reportsHTML = reportData.map((report, index) => {
                 const [stt, tenNguoiNhan, donVi, loaiBaoCao, kiHieu] = report;
                 
                 const isSubmitted = submissionHistory.some(history => history[1] === kiHieu);
                 const submissionInfo = submissionHistory.find(history => history[1] === kiHieu);
                 
+                if (isSubmitted) submittedCount++;
+                
                 return `
-                    <div class="report-item ${isSubmitted ? 'submitted' : ''}">
+                    <div class="report-item ${isSubmitted ? 'submitted' : ''} fade-in" 
+                         onclick="selectReport(${index})" 
+                         style="animation-delay: ${index * 0.1}s">
                         <input type="radio" 
                                name="selectedReport" 
                                value="${index}" 
@@ -720,16 +1011,48 @@
                                onchange="validateForm()">
                         <div class="report-info">
                             <div class="report-title">
-                                ${isSubmitted ? '✅' : ''} ${loaiBaoCao}
+                                ${isSubmitted ? '✅ ' : '📋 '}${loaiBaoCao}
                             </div>
                             <div class="report-recipient">
-                                ${tenNguoiNhan} - ${donVi}
+                                👤 ${tenNguoiNhan} - ${donVi}
                             </div>
-                            ${isSubmitted ? `<div class="report-status">Đã nộp - ${submissionInfo[2]}</div>` : ''}
+                            <span class="report-code">${kiHieu}</span>
+                            ${isSubmitted ? `<div class="report-status">✓ Đã nộp vào ${submissionInfo[2]}</div>` : ''}
                         </div>
                     </div>
                 `;
             }).join('');
+
+            reportList.innerHTML = reportsHTML;
+            reportList.style.display = 'block';
+            
+            // Cập nhật thống kê
+            updateStats(reportData.length, submittedCount, reportData.length - submittedCount);
+        }
+
+        function selectReport(index) {
+            const radio = document.querySelector(`input[name="selectedReport"][value="${index}"]`);
+            if (radio && !radio.disabled) {
+                radio.checked = true;
+                validateForm();
+                
+                // Visual feedback
+                document.querySelectorAll('.report-item').forEach(item => {
+                    item.style.borderColor = '#e1e5e9';
+                });
+                radio.closest('.report-item').style.borderColor = '#667eea';
+            }
+        }
+
+        function updateStats(total, submitted, pending) {
+            document.getElementById('totalReports').textContent = total;
+            document.getElementById('submittedReports').textContent = submitted;
+            document.getElementById('pendingReports').textContent = pending;
+        }
+
+        function showLoadingReports(show) {
+            document.getElementById('loadingReports').style.display = show ? 'block' : 'none';
+            document.getElementById('reportList').style.display = show ? 'none' : 'block';
         }
 
         function setupFileHandlers() {
@@ -737,16 +1060,23 @@
             const fileInputArea = document.getElementById('fileInputArea');
             const schoolName = document.getElementById('schoolName');
 
+            // File input change
             if (fileInput && !fileInput.hasEventListener) {
                 fileInput.addEventListener('change', handleFileSelect);
                 fileInput.hasEventListener = true;
             }
 
+            // School name input
             if (schoolName && !schoolName.hasEventListener) {
-                schoolName.addEventListener('input', validateForm);
+                schoolName.addEventListener('input', function() {
+                    validateForm();
+                    // Auto-uppercase
+                    this.value = this.value.toUpperCase();
+                });
                 schoolName.hasEventListener = true;
             }
             
+            // Drag & drop handlers
             if (fileInputArea && !fileInputArea.hasEventListener) {
                 fileInputArea.addEventListener('dragover', function(e) {
                     e.preventDefault();
@@ -760,11 +1090,17 @@
                 fileInputArea.addEventListener('drop', function(e) {
                     e.preventDefault();
                     fileInputArea.classList.remove('dragover');
+                    
                     const files = e.dataTransfer.files;
                     if (files.length > 0) {
                         fileInput.files = files;
                         handleFileSelect();
                     }
+                });
+                
+                // Click handler
+                fileInputArea.addEventListener('click', function() {
+                    fileInput.click();
                 });
                 
                 fileInputArea.hasEventListener = true;
@@ -779,23 +1115,58 @@
                 const file = fileInput.files[0];
                 const allowedTypes = ['.pdf', '.doc', '.docx', '.xls', '.xlsx', '.mp4'];
                 const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
+                const maxSize = 50 * 1024 * 1024; // 50MB
                 
+                // Kiểm tra định dạng file
                 if (!allowedTypes.includes(fileExtension)) {
-                    showNotification('File không đúng định dạng! Chỉ nhận: PDF, DOC, DOCX, XLS, XLSX, MP4', 'error');
+                    showNotification(
+                        `File không đúng định dạng!\n` +
+                        `Chỉ chấp nhận: ${allowedTypes.join(', ')}\n` +
+                        `File của bạn: ${fileExtension}`,
+                        'error'
+                    );
                     fileInput.value = '';
-                    selectedFileDiv.innerHTML = '';
+                    selectedFileDiv.style.display = 'none';
+                    return;
+                }
+
+                // Kiểm tra kích thước
+                if (file.size > maxSize) {
+                    showNotification(
+                        `File quá lớn!\n` +
+                        `Kích thước tối đa: 50MB\n` +
+                        `File của bạn: ${formatFileSize(file.size)}`,
+                        'error'
+                    );
+                    fileInput.value = '';
+                    selectedFileDiv.style.display = 'none';
                     return;
                 }
                 
+                // Hiển thị thông tin file đã chọn
                 selectedFileDiv.innerHTML = `
-                    <strong>File đã chọn:</strong> ${file.name}<br>
-                    <small>Kích thước: ${formatFileSize(file.size)}</small>
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <div>
+                            <strong>📁 ${file.name}</strong><br>
+                            <small>📊 Kích thước: ${formatFileSize(file.size)} | 📅 ${new Date(file.lastModified).toLocaleDateString('vi-VN')}</small>
+                        </div>
+                        <button type="button" onclick="clearFile()" style="background: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;">
+                            ✕
+                        </button>
+                    </div>
                 `;
+                selectedFileDiv.style.display = 'block';
                 
-                debugLog(`File đã chọn: ${file.name}`);
+                debugLog(`File đã chọn: ${file.name} (${formatFileSize(file.size)})`);
             } else {
-                selectedFileDiv.innerHTML = '';
+                selectedFileDiv.style.display = 'none';
             }
+            validateForm();
+        }
+
+        function clearFile() {
+            document.getElementById('reportFile').value = '';
+            document.getElementById('selectedFile').style.display = 'none';
             validateForm();
         }
 
@@ -806,28 +1177,43 @@
             const submitBtn = document.getElementById('submitBtn');
             
             const isValid = schoolName && fileInput?.files.length > 0 && selectedReport;
+            
             if (submitBtn) {
                 submitBtn.disabled = !isValid;
+                if (isValid) {
+                    submitBtn.innerHTML = '<span>🚀</span> Nộp Báo Cáo';
+                    submitBtn.style.opacity = '1';
+                } else {
+                    submitBtn.innerHTML = '<span>📝</span> Vui lòng điền đầy đủ thông tin';
+                    submitBtn.style.opacity = '0.6';
+                }
             }
+            
+            return isValid;
         }
 
         async function submitReport() {
-            const schoolName = document.getElementById('schoolName').value.trim();
-            const fileInput = document.getElementById('reportFile');
-            const selectedReportIndex = document.querySelector('input[name="selectedReport"]:checked')?.value;
-            
-            if (!selectedReportIndex || !schoolName || !fileInput.files.length) {
-                showNotification('Vui lòng điền đầy đủ thông tin!', 'error');
+            if (!validateForm()) {
+                showNotification('Vui lòng điền đầy đủ thông tin trước khi nộp báo cáo!', 'warning');
                 return;
             }
 
+            const schoolName = document.getElementById('schoolName').value.trim();
+            const fileInput = document.getElementById('reportFile');
+            const selectedReportIndex = document.querySelector('input[name="selectedReport"]:checked').value;
+            
             const selectedReport = reportData[selectedReportIndex];
             const file = fileInput.files[0];
             const [stt, tenNguoiNhan, donVi, loaiBaoCao, kiHieu] = selectedReport;
             
             try {
+                debugLog(`Bắt đầu nộp báo cáo: ${kiHieu}`);
+                
+                // Disable form
+                document.getElementById('submitBtn').disabled = true;
+                document.getElementById('submitBtn').innerHTML = '<span>⏳</span> Đang xử lý...';
+                
                 showProgress(true);
-                debugLog('Bắt đầu quá trình nộp báo cáo...');
                 
                 if (isDemoMode) {
                     await performDemoUpload(schoolName, file, selectedReport);
@@ -836,60 +1222,71 @@
                 }
                 
             } catch (error) {
-                showProgress(false);
-                debugLog('Nộp báo cáo thất bại: ' + error.message, 'error');
+                debugLog('Lỗi nộp báo cáo: ' + error.message, 'error');
                 showNotification('Lỗi nộp báo cáo: ' + error.message, 'error');
+                
+                // Re-enable form
+                document.getElementById('submitBtn').disabled = false;
+                validateForm();
+            } finally {
+                showProgress(false);
             }
         }
 
         async function performRealUpload(schoolName, file, selectedReport) {
             const [stt, tenNguoiNhan, donVi, loaiBaoCao, kiHieu] = selectedReport;
             const timestamp = new Date().toISOString().replace(/[-:]/g, '').slice(0, 15);
-            const fileExtension = '.' + file.name.split('.').pop();
+            const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
             const newFileName = `${schoolName}_${kiHieu}_${timestamp}${fileExtension}`;
             
-            updateProgress(20);
+            updateProgress(10, 'Tìm/tạo thư mục đích...');
             debugLog(`Tìm/tạo thư mục: ${kiHieu}`);
             const targetFolderId = await findOrCreateSubfolder(kiHieu);
             
-            updateProgress(50);
-            debugLog('Đang tải file lên...');
+            updateProgress(40, 'Đang tải file lên Google Drive...');
+            debugLog(`Upload file: ${newFileName}`);
             await uploadFileToFolder(file, newFileName, targetFolderId);
             
-            updateProgress(80);
-            debugLog('Ghi lại lịch sử nộp...');
+            updateProgress(80, 'Ghi lại thông tin nộp báo cáo...');
+            debugLog('Ghi vào sheet lịch sử...');
             await recordSubmission(currentUser.getBasicProfile().getEmail(), kiHieu, newFileName);
             
-            updateProgress(100);
-            showProgress(false);
+            updateProgress(100, 'Hoàn thành!');
             
-            showNotification(`Nộp báo cáo thành công!\nFile: ${newFileName}\nNơi nhận: ${tenNguoiNhan}`, 'success');
+            showNotification(
+                `🎉 Nộp báo cáo thành công!\n\n` +
+                `📄 File: ${newFileName}\n` +
+                `👤 Người nhận: ${tenNguoiNhan}\n` +
+                `🏢 Đơn vị: ${donVi}\n` +
+                `⏰ Thời gian: ${new Date().toLocaleString('vi-VN')}`,
+                'success'
+            );
             
+            debugLog(`Upload thành công: ${newFileName}`, 'success');
+            
+            // Reset form và reload data
             resetForm();
-            loadData();
+            await loadDataFromSheets();
         }
 
         async function performDemoUpload(schoolName, file, selectedReport) {
             const [stt, tenNguoiNhan, donVi, loaiBaoCao, kiHieu] = selectedReport;
             const timestamp = new Date().toISOString().replace(/[-:]/g, '').slice(0, 15);
-            const fileExtension = '.' + file.name.split('.').pop();
+            const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
             const newFileName = `${schoolName}_${kiHieu}_${timestamp}${fileExtension}`;
             
-            updateProgress(25);
+            updateProgress(20, 'Demo: Mô phỏng tìm thư mục...');
+            await sleep(1000);
+            
+            updateProgress(50, 'Demo: Mô phỏng upload file...');
+            await sleep(1200);
+            
+            updateProgress(80, 'Demo: Mô phỏng ghi lịch sử...');
             await sleep(800);
-            debugLog('Demo: Tìm/tạo thư mục...');
             
-            updateProgress(50);
-            await sleep(800);
-            debugLog('Demo: Upload file...');
+            updateProgress(100, 'Demo hoàn thành!');
             
-            updateProgress(75);
-            await sleep(800);
-            debugLog('Demo: Ghi lịch sử...');
-            
-            updateProgress(100);
-            showProgress(false);
-            
+            // Thêm vào lịch sử demo
             submissionHistory.push([
                 'demo@example.com',
                 kiHieu,
@@ -897,8 +1294,19 @@
                 newFileName
             ]);
             
-            showNotification(`Demo: Nộp báo cáo thành công!\nFile: ${newFileName}\nNơi nhận: ${tenNguoiNhan}`, 'success');
+            showNotification(
+                `🎭 Demo: Nộp báo cáo thành công!\n\n` +
+                `📄 File: ${newFileName}\n` +
+                `👤 Người nhận: ${tenNguoiNhan}\n` +
+                `🏢 Đơn vị: ${donVi}\n` +
+                `⏰ Thời gian: ${new Date().toLocaleString('vi-VN')}\n\n` +
+                `ℹ️ Đây là chế độ demo, file không được upload thực tế.`,
+                'success'
+            );
             
+            debugLog(`Demo upload thành công: ${newFileName}`, 'success');
+            
+            // Reset form và cập nhật display
             resetForm();
             displayReports();
         }
@@ -910,20 +1318,24 @@
         // Google Drive operations
         async function findOrCreateSubfolder(kiHieu) {
             const response = await gapi.client.drive.files.list({
-                q: `name='${kiHieu}' and parents in '${CONFIG.PARENT_FOLDER_ID}' and mimeType='application/vnd.google-apps.folder'`,
+                q: `name='${kiHieu}' and parents in '${CONFIG.PARENT_FOLDER_ID}' and mimeType='application/vnd.google-apps.folder' and trashed=false`,
                 fields: 'files(id, name)'
             });
             
             if (response.result.files.length > 0) {
+                debugLog(`Tìm thấy thư mục: ${kiHieu}`, 'success');
                 return response.result.files[0].id;
             } else {
+                debugLog(`Tạo thư mục mới: ${kiHieu}`);
                 const createResponse = await gapi.client.drive.files.create({
                     resource: {
                         name: kiHieu,
                         mimeType: 'application/vnd.google-apps.folder',
                         parents: [CONFIG.PARENT_FOLDER_ID]
-                    }
+                    },
+                    fields: 'id'
                 });
+                debugLog(`Đã tạo thư mục: ${kiHieu}`, 'success');
                 return createResponse.result.id;
             }
         }
@@ -933,85 +1345,122 @@
                 const reader = new FileReader();
                 reader.onload = async function(e) {
                     try {
+                        const metadata = {
+                            name: fileName,
+                            parents: [folderId]
+                        };
+
                         const response = await gapi.client.request({
                             path: 'https://www.googleapis.com/upload/drive/v3/files',
                             method: 'POST',
-                            params: { uploadType: 'multipart' },
-                            headers: { 'Content-Type': 'multipart/related; boundary="foo_bar_baz"' },
-                            body: createMultipartBody(fileName, folderId, file.type, e.target.result)
+                            params: { 
+                                uploadType: 'multipart',
+                                fields: 'id,name,size,createdTime'
+                            },
+                            headers: { 
+                                'Content-Type': 'multipart/related; boundary="foo_bar_baz"' 
+                            },
+                            body: createMultipartBody(metadata, file.type, e.target.result)
                         });
+                        
+                        debugLog(`File uploaded với ID: ${response.result.id}`, 'success');
                         resolve(response.result);
                     } catch (error) {
+                        debugLog(`Upload thất bại: ${error.message}`, 'error');
                         reject(error);
                     }
                 };
+                reader.onerror = () => reject(new Error('Không thể đọc file'));
                 reader.readAsArrayBuffer(file);
             });
         }
 
-        function createMultipartBody(fileName, parentId, mimeType, data) {
+        function createMultipartBody(metadata, mimeType, data) {
             const delimiter = 'foo_bar_baz';
-            let body = '--' + delimiter + '\r\n';
+            let body = `--${delimiter}\r\n`;
             body += 'Content-Type: application/json\r\n\r\n';
-            body += JSON.stringify({ name: fileName, parents: [parentId] }) + '\r\n';
-            body += '--' + delimiter + '\r\n';
-            body += 'Content-Type: ' + mimeType + '\r\n\r\n';
+            body += JSON.stringify(metadata) + '\r\n';
+            body += `--${delimiter}\r\n`;
+            body += `Content-Type: ${mimeType}\r\n\r\n`;
             
             const uint8Array = new Uint8Array(data);
-            const binaryString = Array.from(uint8Array).map(byte => String.fromCharCode(byte)).join('');
-            body += binaryString + '\r\n--' + delimiter + '--';
+            const binaryString = Array.from(uint8Array, byte => String.fromCharCode(byte)).join('');
+            body += binaryString;
+            body += `\r\n--${delimiter}--`;
             
             return body;
         }
 
         async function recordSubmission(userEmail, kiHieu, fileName) {
             const now = new Date().toLocaleString('vi-VN');
-            await gapi.client.sheets.spreadsheets.values.append({
-                spreadsheetId: CONFIG.SPREADSHEET_ID,
-                range: 'LichSuNop!A:D',
-                valueInputOption: 'RAW',
-                resource: {
-                    values: [[userEmail, kiHieu, now, fileName]]
-                }
-            });
+            
+            try {
+                await gapi.client.sheets.spreadsheets.values.append({
+                    spreadsheetId: CONFIG.SPREADSHEET_ID,
+                    range: 'LichSuNop!A:D',
+                    valueInputOption: 'RAW',
+                    insertDataOption: 'INSERT_ROWS',
+                    resource: {
+                        values: [[userEmail, kiHieu, now, fileName]]
+                    }
+                });
+                debugLog('Đã ghi vào sheet lịch sử', 'success');
+            } catch (error) {
+                debugLog('Lỗi ghi sheet lịch sử: ' + error.message, 'error');
+                throw error;
+            }
         }
 
         async function createHistorySheet() {
-            await gapi.client.sheets.spreadsheets.batchUpdate({
-                spreadsheetId: CONFIG.SPREADSHEET_ID,
-                resource: {
-                    requests: [{
-                        addSheet: {
-                            properties: { title: 'LichSuNop' }
-                        }
-                    }]
-                }
-            });
+            try {
+                // Tạo sheet mới
+                await gapi.client.sheets.spreadsheets.batchUpdate({
+                    spreadsheetId: CONFIG.SPREADSHEET_ID,
+                    resource: {
+                        requests: [{
+                            addSheet: {
+                                properties: { 
+                                    title: 'LichSuNop',
+                                    gridProperties: {
+                                        rowCount: 1000,
+                                        columnCount: 10
+                                    }
+                                }
+                            }
+                        }]
+                    }
+                });
 
-            await gapi.client.sheets.spreadsheets.values.update({
-                spreadsheetId: CONFIG.SPREADSHEET_ID,
-                range: 'LichSuNop!A1:D1',
-                valueInputOption: 'RAW',
-                resource: {
-                    values: [['Email người nộp', 'Kí hiệu báo cáo', 'Ngày giờ nộp', 'Tên file']]
-                }
-            });
+                // Thêm header
+                await gapi.client.sheets.spreadsheets.values.update({
+                    spreadsheetId: CONFIG.SPREADSHEET_ID,
+                    range: 'LichSuNop!A1:D1',
+                    valueInputOption: 'RAW',
+                    resource: {
+                        values: [['Email người nộp', 'Kí hiệu báo cáo', 'Ngày giờ nộp', 'Tên file']]
+                    }
+                });
+
+                debugLog('Đã tạo sheet LichSuNop', 'success');
+            } catch (error) {
+                debugLog('Lỗi tạo sheet: ' + error.message, 'error');
+                throw error;
+            }
         }
 
         // Utility functions
         function showProgress(show) {
-            const progressBar = document.getElementById('progressBar');
-            if (progressBar) {
-                progressBar.style.display = show ? 'block' : 'none';
-                if (!show) updateProgress(0);
-            }
+            const container = document.getElementById('progressContainer');
+            container.style.display = show ? 'block' : 'none';
+            if (!show) updateProgress(0, '');
         }
 
-        function updateProgress(percent) {
-            const progressFill = document.getElementById('progressFill');
-            if (progressFill) {
-                progressFill.style.width = percent + '%';
-            }
+        function updateProgress(percent, text = '') {
+            const fill = document.getElementById('progressFill');
+            const textElement = document.getElementById('progressText');
+            
+            if (fill) fill.style.width = percent + '%';
+            if (textElement) textElement.textContent = text;
         }
 
         function showNotification(message, type) {
@@ -1021,9 +1470,14 @@
                 notification.className = `notification ${type}`;
                 notification.style.display = 'block';
                 
+                // Auto hide after delay
+                const delay = type === 'success' ? 8000 : type === 'error' ? 10000 : 5000;
                 setTimeout(() => {
                     notification.style.display = 'none';
-                }, type === 'success' ? 6000 : 4000);
+                }, delay);
+
+                // Scroll to notification
+                notification.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             }
         }
 
@@ -1036,20 +1490,23 @@
         }
 
         function resetForm() {
-            const elements = ['schoolName', 'reportFile', 'selectedFile'];
-            elements.forEach(id => {
-                const el = document.getElementById(id);
-                if (el) {
-                    if (el.type === 'file' || el.type === 'text') {
-                        el.value = '';
-                    } else {
-                        el.innerHTML = '';
-                    }
-                }
+            // Clear inputs
+            document.getElementById('schoolName').value = '';
+            document.getElementById('reportFile').value = '';
+            document.getElementById('selectedFile').style.display = 'none';
+            
+            // Uncheck radio buttons
+            document.querySelectorAll('input[name="selectedReport"]').forEach(radio => {
+                radio.checked = false;
+            });
+
+            // Reset visual styles
+            document.querySelectorAll('.report-item').forEach(item => {
+                item.style.borderColor = '#e1e5e9';
             });
             
-            document.querySelectorAll('input[name="selectedReport"]').forEach(radio => radio.checked = false);
             validateForm();
+            debugLog('Form đã được reset');
         }
     </script>
 </body>
