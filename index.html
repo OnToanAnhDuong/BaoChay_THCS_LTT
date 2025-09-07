@@ -3,9 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hệ Thống Nộp Báo Cáo</title>
-    <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iNCIgZmlsbD0iIzY2N2VlYSIvPgo8cGF0aCBkPSJNOCA4aDEydjJ2LTJIMjBWMTJIMTZWMTZoLTRWMTJIOFY4eiIgZmlsbD0id2hpdGUiLz4KPC9zdmc+">
+    <title>Hệ Thống Báo Cháy Chung Cư - Firebase Realtime</title>
     
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Leaflet.js - FREE Maps Alternative -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -15,1498 +23,2848 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
             min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
+            padding: 0;
+            color: white;
         }
 
         .container {
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-            padding: 40px;
-            max-width: 700px;
-            width: 100%;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        .sticky-section {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            padding: 20px 20px 10px 20px;
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .main-content-wrapper {
+            padding: 20px;
+            padding-top: 0;
         }
 
         .header {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
             text-align: center;
-            margin-bottom: 30px;
         }
 
         .header h1 {
-            color: #333;
-            font-size: 28px;
-            margin-bottom: 10px;
+            color: white;
+            font-size: 2.2em;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
         }
 
-        .header p {
-            color: #666;
-            font-size: 16px;
+        .demo-badge {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.4em;
+            font-weight: bold;
+            animation: pulse 2s infinite;
         }
 
-        .status-box {
-            padding: 15px;
+        .firebase-badge {
+            background: linear-gradient(45deg, #ff6b35, #f7931e);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.4em;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .firebase-badge.connected {
+            background: linear-gradient(45deg, #4ade80, #22c55e);
+            animation: connectedPulse 2s infinite alternate;
+        }
+
+        @keyframes connectedPulse {
+            0% { box-shadow: 0 0 5px rgba(74, 222, 128, 0.5); }
+            100% { box-shadow: 0 0 15px rgba(74, 222, 128, 0.8); }
+        }
+
+        .emergency-grid-compact {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+
+        .emergency-btn-compact {
+            padding: 12px 8px;
+            border: none;
             border-radius: 10px;
-            margin: 20px 0;
-            text-align: center;
-            font-weight: 500;
-        }
-
-        .status-loading {
-            background: #fff3cd;
-            color: #856404;
-            border-left: 4px solid #ffc107;
-        }
-
-        .status-ready {
-            background: #d4edda;
-            color: #155724;
-            border-left: 4px solid #28a745;
-        }
-
-        .status-error {
-            background: #f8d7da;
-            color: #721c24;
-            border-left: 4px solid #dc3545;
-        }
-
-        .status-demo {
-            background: #e2e3e5;
-            color: #383d41;
-            border-left: 4px solid #6c757d;
-        }
-
-        .debug-section {
-            background: #f8f9fa;
-            border: 1px solid #dee2e6;
-            border-radius: 8px;
-            padding: 15px;
-            margin: 15px 0;
-            font-family: 'Courier New', monospace;
-            font-size: 12px;
-            max-height: 200px;
-            overflow-y: auto;
-            display: none;
-        }
-
-        .debug-error {
-            color: #dc3545;
-            font-weight: bold;
-        }
-
-        .debug-success {
-            color: #28a745;
-            font-weight: bold;
-        }
-
-        .debug-info {
-            color: #17a2b8;
-        }
-
-        .debug-warning {
-            color: #856404;
-            font-weight: bold;
-        }
-
-        .form-group {
-            margin-bottom: 25px;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 8px;
+            cursor: pointer;
             font-weight: 600;
-            color: #333;
-        }
-
-        input[type="text"], select, textarea {
-            width: 100%;
-            padding: 12px 16px;
-            border: 2px solid #e1e5e9;
-            border-radius: 8px;
-            font-size: 16px;
-            transition: border-color 0.3s ease;
-            font-family: inherit;
-        }
-
-        input[type="text"]:focus, select:focus, textarea:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-
-        textarea {
-            resize: vertical;
+            font-size: 0.9em;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            position: relative;
             min-height: 80px;
         }
 
-        .file-input-container {
-            position: relative;
-            display: inline-block;
-            width: 100%;
+        .emergency-btn-compact:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
         }
 
-        .file-input {
-            width: 100%;
-            padding: 20px 16px;
-            border: 2px dashed #e1e5e9;
-            border-radius: 8px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            background: #f8f9fa;
+        .emergency-btn-compact i {
+            font-size: 1.2em;
         }
 
-        .file-input:hover {
-            border-color: #667eea;
-            background: #f0f4ff;
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
         }
 
-        .file-input.dragover {
-            border-color: #667eea;
-            background: #e8f0ff;
-            border-style: solid;
-        }
-
-        input[type="file"] {
-            position: absolute;
-            opacity: 0;
-            width: 100%;
-            height: 100%;
-            cursor: pointer;
-        }
-
-        .selected-file {
+        .building-status {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
             margin-top: 15px;
-            padding: 10px;
-            background: #e8f5e8;
-            border-radius: 6px;
-            font-size: 14px;
-            color: #155724;
-            display: none;
+            flex-wrap: wrap;
         }
 
-        .report-list {
-            max-height: 350px;
-            overflow-y: auto;
-            border: 2px solid #e1e5e9;
-            border-radius: 8px;
-            padding: 15px;
-            background: #f8f9fa;
-        }
-
-        .report-item {
+        .status-item {
             display: flex;
             align-items: center;
-            padding: 15px;
-            margin-bottom: 12px;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            transition: all 0.3s ease;
-            cursor: pointer;
-        }
-
-        .report-item:hover:not(.submitted) {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            border: 2px solid #667eea;
-        }
-
-        .report-item.submitted {
-            background: #e8f5e8;
-            opacity: 0.8;
-            cursor: not-allowed;
-        }
-
-        .report-item input[type="radio"] {
-            margin-right: 15px;
-            transform: scale(1.3);
-        }
-
-        .report-info {
-            flex: 1;
-        }
-
-        .report-title {
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 5px;
-            font-size: 16px;
-        }
-
-        .report-recipient {
-            font-size: 14px;
-            color: #666;
-            margin-bottom: 3px;
-        }
-
-        .report-code {
-            font-size: 12px;
-            color: #007bff;
-            font-weight: 500;
-            background: #e3f2fd;
-            padding: 2px 6px;
-            border-radius: 3px;
-            display: inline-block;
-        }
-
-        .report-status {
-            font-size: 12px;
-            color: #28a745;
-            font-style: italic;
-            margin-top: 5px;
-        }
-
-        .btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            border: none;
-            padding: 15px 30px;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            width: 100%;
+            font-size: 1.1em;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 10px 18px;
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
         }
 
-        .btn:hover:not(:disabled) {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 16px rgba(102, 126, 234, 0.3);
-        }
-
-        .btn:disabled {
-            background: #ccc;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-        }
-
-        .btn-google {
-            background: #4285f4;
-            margin-bottom: 15px;
-        }
-
-        .btn-demo {
-            background: #6c757d;
-            padding: 10px 20px;
-            font-size: 14px;
-            width: auto;
-            margin: 10px auto;
-            display: block;
-        }
-
-        .btn-debug {
-            background: #6c757d;
-            padding: 8px 16px;
-            font-size: 12px;
-            width: auto;
-            margin-bottom: 15px;
-        }
-
-        .login-section, .upload-section {
-            display: none;
-        }
-
-        .login-section.active, .upload-section.active {
-            display: block;
-        }
-
-        .progress-container {
-            margin: 20px 0;
-            display: none;
-        }
-
-        .progress-bar {
-            width: 100%;
-            height: 8px;
-            background: #e1e5e9;
-            border-radius: 4px;
-            overflow: hidden;
-            margin-bottom: 10px;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #667eea, #764ba2);
-            width: 0%;
-            transition: width 0.5s ease;
-        }
-
-        .progress-text {
-            font-size: 14px;
-            color: #666;
-            text-align: center;
-        }
-
-        .notification {
-            padding: 15px;
-            border-radius: 8px;
-            margin: 20px 0;
-            display: none;
-            font-size: 14px;
-            line-height: 1.5;
-        }
-
-        .notification.success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-
-        .notification.error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-
-        .notification.info {
-            background: #d1ecf1;
-            color: #0c5460;
-            border: 1px solid #bee5eb;
-        }
-
-        .notification.warning {
-            background: #fff3cd;
-            color: #856404;
-            border: 1px solid #ffeaa7;
-        }
-
-        .user-info {
-            background: linear-gradient(135deg, #e8f0ff, #f0f4ff);
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 25px;
-            text-align: center;
-            border: 1px solid #bbdefb;
-        }
-
-        .user-info h3 {
-            color: #1565c0;
-            margin-bottom: 5px;
-        }
-
-        .user-info p {
-            color: #666;
-            margin: 0;
-        }
-
-        .loading {
-            text-align: center;
-            padding: 20px;
-            color: #666;
-        }
-
-        .spinner {
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #667eea;
-            border-radius: 50%;
-            width: 30px;
-            height: 30px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 10px;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .platform-info {
-            background: #f8f9fa;
-            border: 1px solid #dee2e6;
-            border-radius: 8px;
-            padding: 15px;
-            margin: 15px 0;
-            font-size: 14px;
-        }
-
-        .platform-info strong {
-            color: #495057;
-        }
-
-        .oauth-setup {
-            background: #e3f2fd;
-            border: 1px solid #bbdefb;
-            border-radius: 8px;
-            padding: 15px;
-            margin: 15px 0;
-            font-size: 14px;
-        }
-
-        .oauth-step {
-            margin: 8px 0;
-            padding-left: 15px;
-        }
-
-        .oauth-step::before {
-            content: "•";
-            color: #2196f3;
-            font-weight: bold;
+        .status-item i {
             margin-right: 8px;
-            margin-left: -15px;
+            font-size: 1.2em;
         }
 
-        .demo-mode-info {
-            background: #fff8e1;
-            border: 1px solid #ffcc02;
-            border-radius: 8px;
-            padding: 15px;
-            margin: 15px 0;
-            font-size: 14px;
-            text-align: center;
+        .status-online {
+            color: #4ade80;
         }
 
-        .stats {
+        .status-alarm {
+            color: #ef4444;
+            animation: alarmPulse 1s infinite;
+        }
+
+        .status-disconnected {
+            color: #f59e0b;
+        }
+
+        @keyframes alarmPulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        /* Firebase Config Section */
+        .config-section {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .config-form {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            grid-template-columns: 1fr 1fr;
             gap: 15px;
             margin-bottom: 20px;
         }
 
-        .stat-card {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 8px;
-            text-align: center;
-            border: 1px solid #dee2e6;
+        .form-group {
+            display: flex;
+            flex-direction: column;
         }
 
-        .stat-number {
-            font-size: 24px;
+        .form-group label {
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .form-group input {
+            padding: 10px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 0.9em;
+        }
+
+        .form-group input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #4CAF50;
+            box-shadow: 0 0 10px rgba(76, 175, 80, 0.3);
+        }
+
+        .connection-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .status-disconnected {
+            background: rgba(244, 67, 54, 0.2);
+            border: 2px solid #f44336;
+            color: #ff5722;
+        }
+
+        .status-connected {
+            background: rgba(76, 175, 80, 0.2);
+            border: 2px solid #4CAF50;
+            color: #4CAF50;
+        }
+
+        .emergency-section {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            margin-bottom: 0;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.4em;
+            font-weight: 600;
+        }
+
+        .section-title i {
+            color: #fbbf24;
+        }
+
+        .emergency-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .emergency-btn {
+            padding: 20px;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1.1em;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            position: relative;
+        }
+
+        .emergency-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .emergency-btn i {
+            font-size: 1.5em;
+        }
+
+        .btn-fire-dept {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+        }
+
+        .btn-ambulance {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+        }
+
+        .btn-police {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+        }
+
+        .btn-security {
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+            color: white;
+        }
+
+        .emergency-status {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #4ade80;
+        }
+
+        .emergency-status.calling {
+            background: #ef4444;
+            animation: callPulse 0.5s infinite;
+        }
+
+        @keyframes callPulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.2); }
+        }
+
+        .main-content {
+            display: flex;
+            gap: 25px;
+            margin-bottom: 25px;
+        }
+
+        .rooms-section {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            flex: 1;
+            min-height: 500px;
+        }
+
+        .floor-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+
+        .floor-tab {
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            border: 2px solid transparent;
+            position: relative;
+        }
+
+        .floor-tab.active {
+            background: #3b82f6;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+        }
+
+        .floor-tab:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .floor-tab.floor-safe {
+            border-color: #4ade80;
+            background: rgba(74, 222, 128, 0.2);
+        }
+
+        .floor-tab.floor-warning {
+            border-color: #f59e0b;
+            background: rgba(245, 158, 11, 0.2);
+            animation: warningGlow 2s infinite alternate;
+        }
+
+        .floor-tab.floor-danger {
+            border-color: #ef4444;
+            background: rgba(239, 68, 68, 0.3);
+            animation: dangerGlow 1s infinite alternate;
+        }
+
+        @keyframes warningGlow {
+            0% { box-shadow: 0 0 10px rgba(245, 158, 11, 0.3); }
+            100% { box-shadow: 0 0 20px rgba(245, 158, 11, 0.6); }
+        }
+
+        @keyframes dangerGlow {
+            0% { box-shadow: 0 0 10px rgba(239, 68, 68, 0.5); }
+            100% { box-shadow: 0 0 20px rgba(239, 68, 68, 1); }
+        }
+
+        .floor-alert-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            width: 12px;
+            height: 12px;
+            background: #ef4444;
+            border-radius: 50%;
+            animation: alarmBlink 1s infinite;
+        }
+
+        @keyframes alarmBlink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        .building-overview {
+            text-align: center;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.3), rgba(147, 51, 234, 0.3));
+            border-radius: 15px;
+            padding: 40px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .building-overview::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300"><rect x="50" y="50" width="300" height="200" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="2"/><rect x="70" y="70" width="20" height="15" fill="rgba(255,255,255,0.2)"/><rect x="100" y="70" width="20" height="15" fill="rgba(255,255,255,0.2)"/><rect x="130" y="70" width="20" height="15" fill="rgba(255,255,255,0.2)"/><rect x="160" y="70" width="20" height="15" fill="rgba(255,255,255,0.2)"/><rect x="190" y="70" width="20" height="15" fill="rgba(255,255,255,0.2)"/><rect x="220" y="70" width="20" height="15" fill="rgba(255,255,255,0.2)"/><rect x="250" y="70" width="20" height="15" fill="rgba(255,255,255,0.2)"/><rect x="280" y="70" width="20" height="15" fill="rgba(255,255,255,0.2)"/><rect x="70" y="100" width="20" height="15" fill="rgba(255,255,255,0.2)"/><rect x="100" y="100" width="20" height="15" fill="rgba(255,255,255,0.2)"/><rect x="130" y="100" width="20" height="15" fill="rgba(255,255,255,0.2)"/><rect x="160" y="100" width="20" height="15" fill="rgba(255,255,255,0.2)"/><rect x="190" y="100" width="20" height="15" fill="rgba(255,255,255,0.2)"/><rect x="220" y="100" width="20" height="15" fill="rgba(255,255,255,0.2)"/><rect x="250" y="100" width="20" height="15" fill="rgba(255,255,255,0.2)"/><rect x="280" y="100" width="20" height="15" fill="rgba(255,255,255,0.2)"/><rect x="70" y="130" width="20" height="15" fill="rgba(255,255,255,0.2)"/><rect x="100" y="130" width="20" height="15" fill="rgba(255,255,255,0.2)"/><rect x="130" y="130" width="20" height="15" fill="rgba(255,255,255,0.2)"/><rect x="160" y="130" width="20" height="15" fill="rgba(255,255,255,0.2)"/><rect x="190" y="130" width="20" height="15" fill="rgba(255,255,255,0.2)"/><rect x="220" y="130" width="20" height="15" fill="rgba(255,255,255,0.2)"/><rect x="250" y="130" width="20" height="15" fill="rgba(255,255,255,0.2)"/><rect x="280" y="130" width="20" height="15" fill="rgba(255,255,255,0.2)"/><text x="200" y="280" text-anchor="middle" fill="rgba(255,255,255,0.8)" font-size="14">CHUNG CƯ 24 CĂN HỘ</text></svg>');
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: contain;
+            opacity: 0.6;
+        }
+
+        .building-info {
+            position: relative;
+            z-index: 1;
+        }
+
+        .building-title {
+            font-size: 2.2em;
+            color: white;
+            margin-bottom: 15px;
             font-weight: bold;
-            color: #667eea;
+            text-shadow: 2px 2px 8px rgba(0,0,0,0.5);
+        }
+
+        .building-subtitle {
+            font-size: 1.2em;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 25px;
+        }
+
+        .building-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .building-stat {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 15px;
+            backdrop-filter: blur(10px);
+        }
+
+        .building-stat-value {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: white;
+            margin-bottom: 5px;
+        }
+
+        .building-stat-label {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9em;
+        }
+
+        .floor-instruction {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.7);
+            font-style: italic;
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            border: 1px dashed rgba(255, 255, 255, 0.3);
+        }
+
+        .rooms-grid {
+            display: none;
+            grid-template-columns: repeat(8, 1fr);
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .rooms-grid.show {
+            display: grid;
+            animation: fadeInUp 0.5s ease;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .room-square {
+            aspect-ratio: 1;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            border: 2px solid transparent;
+            font-weight: 600;
+            font-size: 0.9em;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .room-square:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .room-safe {
+            background: linear-gradient(135deg, #4ade80, #22c55e);
+            border-color: #16a34a;
+        }
+
+        .room-warning {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            border-color: #b45309;
+            animation: warningGlow 3s infinite alternate;
+        }
+
+        .room-danger {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            border-color: #b91c1c;
+            animation: dangerGlow 1.5s infinite alternate;
+        }
+
+        .room-number {
+            font-size: 1.1em;
+            font-weight: bold;
+            margin-bottom: 2px;
+        }
+
+        .room-temp {
+            font-size: 0.8em;
+            opacity: 0.9;
+        }
+
+        .alarm-indicator {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            width: 12px;
+            height: 12px;
+            background: #ef4444;
+            border-radius: 50%;
+            animation: alarmBlink 1s infinite;
+        }
+
+        .stats-section {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .stats-card {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            border-radius: 15px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .stats-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+            font-weight: 600;
+        }
+
+        .stats-header i {
+            color: #fbbf24;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .stat-item {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.8em;
+            font-weight: bold;
+            margin-bottom: 5px;
         }
 
         .stat-label {
-            font-size: 12px;
-            color: #666;
-            margin-top: 5px;
+            font-size: 0.9em;
+            opacity: 0.8;
         }
 
-        .empty-state {
+        .stat-safe { color: #4ade80; }
+        .stat-warning { color: #f59e0b; }
+        .stat-danger { color: #ef4444; }
+        .stat-offline { color: #6b7280; }
+
+        .chart-container {
+            height: 280px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+        }
+
+        .map-section {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            margin-bottom: 25px;
+        }
+
+        .map-controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-sm {
+            padding: 8px 12px;
+            font-size: 0.9em;
+        }
+
+        .map-container {
+            display: flex;
+            gap: 20px;
+            margin-top: 20px;
+            height: 400px;
+        }
+
+        .map-info {
+            flex: 0 0 300px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .location-info h4 {
+            color: white;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .location-info p {
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .fire-alerts {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .fire-alert {
+            background: rgba(239, 68, 68, 0.2);
+            border: 2px solid #ef4444;
+            border-radius: 10px;
+            padding: 12px;
+            color: white;
+            animation: fireAlertPulse 2s infinite alternate;
+        }
+
+        .fire-alert i {
+            color: #ef4444;
+            margin-right: 8px;
+            font-size: 1.1em;
+        }
+
+        .fire-alert span {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .fire-alert small {
+            opacity: 0.8;
+            font-size: 0.85em;
+        }
+
+        @keyframes fireAlertPulse {
+            0% { border-color: #ef4444; box-shadow: 0 0 10px rgba(239, 68, 68, 0.3); }
+            100% { border-color: #dc2626; box-shadow: 0 0 20px rgba(239, 68, 68, 0.6); }
+        }
+
+        .google-map {
+            flex: 1;
+            border-radius: 15px;
+            overflow: hidden;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.1);
+            position: relative;
+        }
+
+        .controls-section {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .control-buttons {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+        }
+
+        .btn-info {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            margin: 5% auto;
+            padding: 0;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 500px;
+            position: relative;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            animation: modalSlideIn 0.3s ease;
+            overflow: hidden;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 25px 30px 20px 30px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .modal-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.5em;
+            font-weight: 600;
+            color: white;
+            margin: 0;
+        }
+
+        .modal-title i {
+            font-size: 1.3em;
+            color: #fbbf24;
+        }
+
+        .close {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.3s;
+            background: none;
+            border: none;
+            padding: 5px;
+            line-height: 1;
+        }
+
+        .close:hover {
+            color: #ef4444;
+        }
+
+        .modal-body {
+            padding: 25px 30px 30px 30px;
+        }
+
+        .sensor-details {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .sensor-detail {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
             text-align: center;
-            padding: 40px 20px;
-            color: #666;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        .empty-state .icon {
-            font-size: 48px;
+        .sensor-detail:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .sensor-detail-value {
+            font-size: 1.8em;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: white;
+            line-height: 1.2;
+        }
+
+        .sensor-detail-label {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9em;
+            font-weight: 500;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 20px;
+            border-radius: 25px;
+            font-weight: 600;
+            font-size: 1.1em;
+            margin-bottom: 25px;
+            width: fit-content;
+        }
+
+        .badge-safe {
+            background: rgba(74, 222, 128, 0.2);
+            color: #4ade80;
+            border: 2px solid #4ade80;
+        }
+
+        .badge-warning {
+            background: rgba(245, 158, 11, 0.2);
+            color: #f59e0b;
+            border: 2px solid #f59e0b;
+        }
+
+        .badge-danger {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+            border: 2px solid #ef4444;
+            animation: badgePulse 1s infinite;
+        }
+
+        @keyframes badgePulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .firebase-info {
+            grid-column: span 2;
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid #3b82f6;
+            margin-top: 10px;
+        }
+
+        .firebase-info .sensor-detail-value {
+            font-size: 1em;
+            color: #3b82f6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .demo-info {
+            grid-column: span 2;
+            background: rgba(107, 114, 128, 0.1);
+            border: 1px solid #6b7280;
+            margin-top: 10px;
+        }
+
+        .demo-info .sensor-detail-value {
+            font-size: 1em;
+            color: #6b7280;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .modal-footer {
+            padding: 0 30px 30px 30px;
+            text-align: center;
+        }
+
+        .alert-popup {
+            position: fixed;
+            top: 30px;
+            right: 30px;
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(239, 68, 68, 0.4);
+            z-index: 1001;
+            max-width: 350px;
+            animation: slideInRight 0.5s ease;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            display: none;
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(100%);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .alert-popup h3 {
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .message-modal {
+            max-width: 600px;
+            width: 95%;
+        }
+
+        .message-preview {
+            margin-bottom: 25px;
+        }
+
+        .message-preview h4 {
+            color: white;
             margin-bottom: 15px;
-            opacity: 0.3;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
-        /* Responsive */
+        .message-content {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            border-left: 4px solid #ef4444;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            line-height: 1.6;
+            color: white;
+            font-size: 0.9em;
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .message-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .message-actions .btn {
+            min-width: 140px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .message-note {
+            background: rgba(59, 130, 246, 0.1);
+            border-radius: 8px;
+            padding: 12px;
+            border-left: 3px solid #3b82f6;
+            color: rgba(255, 255, 255, 0.9);
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            font-size: 0.85em;
+            line-height: 1.4;
+        }
+
+        .message-note i {
+            color: #3b82f6;
+            margin-top: 2px;
+            flex-shrink: 0;
+        }
+
+        /* Loading indicator */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Google Maps style animations */
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            60% { transform: translateY(-5px); }
+        }
+
+        @keyframes emergencyPulse {
+            0%, 100% { 
+                transform: scale(1) rotate(-45deg); 
+                box-shadow: 0 6px 16px rgba(234, 67, 53, 0.5); 
+            }
+            50% { 
+                transform: scale(1.05) rotate(-45deg); 
+                box-shadow: 0 8px 20px rgba(234, 67, 53, 0.7); 
+            }
+        }
+
+        @keyframes fireMarkerPulse {
+            0%, 100% { 
+                transform: scale(1) rotate(-45deg); 
+                box-shadow: 0 4px 12px rgba(234, 67, 53, 0.5); 
+            }
+            50% { 
+                transform: scale(1.1) rotate(-45deg); 
+                box-shadow: 0 6px 16px rgba(234, 67, 53, 0.8); 
+            }
+        }
+
+        @media (max-width: 1200px) {
+            .main-content {
+                flex-direction: column;
+            }
+            
+            .map-container {
+                flex-direction: column;
+                height: auto;
+            }
+            
+            .map-info {
+                flex: none;
+            }
+            
+            .google-map {
+                height: 300px;
+            }
+
+            .config-form {
+                grid-template-columns: 1fr;
+            }
+        }
+
         @media (max-width: 768px) {
-            .container {
+            .rooms-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+            
+            .building-status {
+                gap: 15px;
+            }
+            
+            .status-item {
+                font-size: 1em;
+                padding: 8px 12px;
+            }
+            
+            .modal-content {
+                width: 95%;
+                margin: 5% auto;
                 padding: 20px;
-                margin: 10px;
+            }
+            
+            .sensor-details {
+                grid-template-columns: 1fr;
+            }
+            
+            .emergency-grid {
+                grid-template-columns: repeat(2, 1fr);
             }
 
-            .header h1 {
-                font-size: 24px;
+            .message-modal {
+                width: 98%;
+                margin: 2% auto;
+                max-height: 90vh;
+                overflow-y: auto;
             }
 
-            .report-item {
-                padding: 12px;
+            .message-actions {
+                flex-direction: column;
+                gap: 10px;
             }
 
-            .stats {
-                grid-template-columns: 1fr 1fr;
+            .message-actions .btn {
+                width: 100%;
+                min-width: auto;
             }
-        }
 
-        /* Animation for smooth transitions */
-        .fade-in {
-            animation: fadeIn 0.5s ease-in;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+            .message-content {
+                font-size: 0.8em;
+                padding: 15px;
+                max-height: 200px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <h1>Hệ Thống Nộp Báo Cáo</h1>
-            <p>Nộp báo cáo một cách nhanh chóng và hiệu quả</p>
-        </div>
-
-        <button class="btn btn-debug" onclick="toggleDebug()">Xem Debug Log</button>
-        
-        <div class="debug-section" id="debugSection">
-            <div id="debugLog">Khởi tạo hệ thống...</div>
-        </div>
-
-        <div class="status-box status-loading" id="statusBox">
-            <div class="spinner" style="width: 20px; height: 20px; display: inline-block; margin-right: 10px;"></div>
-            Đang khởi tạo Google APIs...
-        </div>
-
-        <div class="platform-info">
-            <strong>Nền tảng:</strong> <span id="platformName">Đang xác định...</span><br>
-            <strong>Domain:</strong> <span id="currentDomain">...</span><br>
-            <strong>OAuth Client ID:</strong> <span style="font-family: monospace; font-size: 12px;">Đã cấu hình</span>
-        </div>
-
-        <!-- Phần đăng nhập -->
-        <div class="login-section" id="loginSection">
-            <button class="btn btn-google" id="signInBtn" onclick="performSignIn()" disabled>
-                <span>🔐</span> Đăng nhập với Google
-            </button>
-            
-            <div style="text-align: center; margin: 15px 0; color: #666;">
-                hoặc
-            </div>
-            
-            <button class="btn btn-demo" onclick="switchToDemo()">
-                <span>🎭</span> Chế độ Demo (Không cần đăng nhập)
-            </button>
-
-            <div class="oauth-setup" id="oauthHelp" style="display: none;">
-                <strong>Hướng dẫn khắc phục lỗi OAuth:</strong>
-                <div class="oauth-step">Vào <a href="https://console.cloud.google.com/apis/credentials" target="_blank">Google Cloud Console</a></div>
-                <div class="oauth-step">Chọn OAuth Client ID: <code>1076801839575...</code></div>
-                <div class="oauth-step">Thêm domain này vào "Authorized JavaScript origins"</div>
-                <div class="oauth-step">Lưu và đợi 5-10 phút để Google cập nhật</div>
-            </div>
-        </div>
-
-        <!-- Phần upload -->
-        <div class="upload-section" id="uploadSection">
-            <div class="user-info" id="userInfo"></div>
-
-            <div class="stats" id="statsSection">
-                <div class="stat-card">
-                    <div class="stat-number" id="totalReports">0</div>
-                    <div class="stat-label">Tổng báo cáo</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number" id="submittedReports">0</div>
-                    <div class="stat-label">Đã nộp</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number" id="pendingReports">0</div>
-                    <div class="stat-label">Chờ nộp</div>
+        <!-- Sticky Header and Emergency Section -->
+        <div class="sticky-section">
+            <div class="header">
+                <h1>
+                    <i class="fas fa-building"></i>
+                    Hệ Thống Báo Cháy Chung Cư
+                    <span class="firebase-badge">FIREBASE CONNECTED</span>
+                </h1>
+                <div class="building-status">
+                    <div class="status-item">
+                        <i class="fas fa-circle" id="systemStatus"></i>
+                        <span id="systemStatusText">Đang kết nối...</span>
+                    </div>
+                    <div class="status-item">
+                        <i class="fas fa-clock"></i>
+                        <span id="lastUpdate">--:--:--</span>
+                    </div>
+                    <div class="status-item">
+                        <i class="fas fa-door-open"></i>
+                        <span id="totalRooms">24 Căn hộ</span>
+                    </div>
+                    <div class="status-item">
+                        <i class="fas fa-wifi" id="connectionIcon"></i>
+                        <span id="connectionText">Offline</span>
+                    </div>
                 </div>
             </div>
 
-            <div class="form-group">
-                <label for="schoolName">
-                    <span>🏫</span> Tên trường (viết tắt):
-                </label>
-                <input type="text" 
-                       id="schoolName" 
-                       placeholder="VD: DHBK, DHKT, HCMUS..." 
-                       required>
+            <!-- Emergency Section - Always Visible -->
+            <div class="emergency-section">
+                <div class="section-header">
+                    <div class="section-title">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <span>Gọi Cứu Hộ Khẩn Cấp</span>
+                    </div>
+                </div>
+                <div class="emergency-grid-compact">
+                    <button class="emergency-btn-compact btn-fire-dept" onclick="callEmergency('fire')">
+                        <div class="emergency-status" id="fireStatus"></div>
+                        <i class="fas fa-fire-extinguisher"></i>
+                        <span>Cứu Hỏa 114</span>
+                    </button>
+                    <button class="emergency-btn-compact btn-ambulance" onclick="callEmergency('ambulance')">
+                        <div class="emergency-status" id="ambulanceStatus"></div>
+                        <i class="fas fa-ambulance"></i>
+                        <span>Cấp Cứu 115</span>
+                    </button>
+                    <button class="emergency-btn-compact btn-police" onclick="callEmergency('police')">
+                        <div class="emergency-status" id="policeStatus"></div>
+                        <i class="fas fa-shield-alt"></i>
+                        <span>Công An 113</span>
+                    </button>
+                    <button class="emergency-btn-compact btn-security" onclick="callEmergency('security')">
+                        <div class="emergency-status" id="securityStatus"></div>
+                        <i class="fas fa-user-shield"></i>
+                        <span>Bảo Vệ</span>
+                    </button>
+                </div>
             </div>
+        </div>
 
-            <div class="form-group">
-                <label for="reportFile">
-                    <span>📄</span> Chọn file báo cáo:
-                </label>
-                <div class="file-input-container">
-                    <div class="file-input" id="fileInputArea">
-                        <div style="font-size: 18px; margin-bottom: 10px;">📁</div>
-                        <div><strong>Kéo thả file vào đây</strong> hoặc <span style="color: #667eea; text-decoration: underline;">click để chọn</span></div>
-                        <div style="margin-top: 8px; font-size: 14px; color: #666;">
-                            Hỗ trợ: PDF, DOC, DOCX, XLS, XLSX, MP4 (tối đa 50MB)
+        <!-- Main Content - Scrollable -->
+        <div class="main-content-wrapper">
+
+        <div class="main-content">
+            <div class="rooms-section">
+                <div class="section-header">
+                    <div class="section-title">
+                        <i class="fas fa-building"></i>
+                        <span>Sơ đồ chung cư</span>
+                    </div>
+                </div>
+                
+                <div class="floor-tabs">
+                    <button class="floor-tab" onclick="showFloor(1)" id="floor1Tab">
+                        Tầng 1
+                    </button>
+                    <button class="floor-tab" onclick="showFloor(2)" id="floor2Tab">
+                        Tầng 2
+                    </button>
+                    <button class="floor-tab" onclick="showFloor(3)" id="floor3Tab">
+                        Tầng 3
+                    </button>
+                </div>
+                
+                <div id="buildingOverview" class="building-overview">
+                    <div class="building-info">
+                        <div class="building-title">Chung Cư An Toàn</div>
+                        <div class="building-subtitle">Hệ thống báo cháy thông minh 24/7 - Firebase Realtime</div>
+                        <div class="building-stats">
+                            <div class="building-stat">
+                                <div class="building-stat-value">3</div>
+                                <div class="building-stat-label">Tầng</div>
+                            </div>
+                            <div class="building-stat">
+                                <div class="building-stat-value" id="totalRoomsCount">24</div>
+                                <div class="building-stat-label">Căn hộ</div>
+                            </div>
+                            <div class="building-stat">
+                                <div class="building-stat-value" id="safeRoomsCount">--</div>
+                                <div class="building-stat-label">An toàn</div>
+                            </div>
                         </div>
                     </div>
-                    <input type="file" 
-                           id="reportFile" 
-                           accept=".pdf,.doc,.docx,.xls,.xlsx,.mp4" 
-                           required>
                 </div>
-                <div class="selected-file" id="selectedFile"></div>
+                
+                <div class="rooms-grid" id="roomsGrid">
+                    <!-- Rooms will be generated by JavaScript -->
+                </div>
+                
+                <div class="floor-instruction" id="floorInstruction">
+                    <i class="fas fa-mouse-pointer"></i>
+                    Nhấn vào tab tầng phía trên để xem sơ đồ phòng chi tiết
+                </div>
             </div>
 
-            <div class="form-group">
-                <label>
-                    <span>📋</span> Chọn báo cáo cần nộp:
-                </label>
-                <div class="loading" id="loadingReports">
-                    <div class="spinner"></div>
-                    Đang tải danh sách báo cáo...
+            <div class="stats-section">
+                <div class="stats-card">
+                    <div class="stats-header">
+                        <i class="fas fa-chart-pie"></i>
+                        <span>Thống kê</span>
+                    </div>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-value stat-safe" id="statSafe">--</div>
+                            <div class="stat-label">An toàn</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value stat-warning" id="statWarning">--</div>
+                            <div class="stat-label">Cảnh báo</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value stat-danger" id="statDanger">--</div>
+                            <div class="stat-label">Nguy hiểm</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value stat-offline" id="statOffline">--</div>
+                            <div class="stat-label">Offline</div>
+                        </div>
+                    </div>
                 </div>
-                <div class="report-list" id="reportList" style="display: none;"></div>
-            </div>
 
-            <div class="progress-container" id="progressContainer">
-                <div class="progress-bar">
-                    <div class="progress-fill" id="progressFill"></div>
+                <div class="stats-card">
+                    <div class="stats-header">
+                        <i class="fas fa-chart-line"></i>
+                        <span>Nhiệt độ trung bình</span>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="temperatureChart"></canvas>
+                    </div>
                 </div>
-                <div class="progress-text" id="progressText">Đang chuẩn bị...</div>
             </div>
+        </div>
 
-            <button class="btn" id="submitBtn" onclick="submitReport()" disabled>
-                <span>🚀</span> Nộp Báo Cáo
-            </button>
+        <div class="map-section">
+            <div class="section-header">
+                <div class="section-title">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <span>Bản đồ vị trí cháy (Firebase Realtime)</span>
+                </div>
+                <div class="map-controls">
+                    <button class="btn btn-success btn-sm" onclick="getCurrentLocation()">
+                        <i class="fas fa-sync-alt"></i> Làm mới vị trí
+                    </button>
+                    <button class="btn btn-info btn-sm" onclick="centerMap()">
+                        <i class="fas fa-crosshairs"></i> Về trung tâm
+                    </button>
+                    <button class="btn btn-warning btn-sm" onclick="showFireRoute()">
+                        <i class="fas fa-route"></i> Đường cứu hỏa
+                    </button>
+                </div>
+            </div>
+            
+            <div class="map-container">
+                <div class="map-info">
+                    <div class="location-info">
+                        <h4><i class="fas fa-fire-extinguisher"></i> Trung Tâm Báo Cháy</h4>
+                        <p><i class="fas fa-map-pin"></i> <span id="buildingLocation">Đang xác định vị trí...</span></p>
+                        <div class="fire-alerts" id="fireAlertsMap">
+                            <div style="text-align: center; color: rgba(255,255,255,0.7); font-style: italic;">
+                                Đang tải dữ liệu từ Firebase...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="map" class="google-map"></div>
+            </div>
+        </div>
 
-            <div class="notification" id="notification"></div>
+        <div class="controls-section">
+            <div class="section-header">
+                <div class="section-title">
+                    <i class="fas fa-cogs"></i>
+                    <span>Điều khiển hệ thống</span>
+                </div>
+            </div>
+            <div class="control-buttons">
+                <button class="btn btn-danger" onclick="resetSystem()">
+                    <i class="fas fa-undo"></i> Reset về tổng quan
+                </button>
+                <button class="btn btn-warning" onclick="testSystem()">
+                    <i class="fas fa-bell"></i> Test hệ thống
+                </button>
+                <button class="btn btn-success" onclick="exportData()">
+                    <i class="fas fa-download"></i> Xuất dữ liệu
+                </button>
+                <button class="btn btn-warning" onclick="createFireTest()">
+                    <i class="fas fa-fire"></i> Test Cháy 207
+                </button>
+                <button class="btn btn-info" onclick="createWarningTest()">
+                    <i class="fas fa-exclamation-triangle"></i> Test Cảnh báo 102
+                </button>
+                <button class="btn btn-success" onclick="resetAllRooms()">
+                    <i class="fas fa-check"></i> Reset An toàn
+                </button>
+            </div>
+        </div>
+
+        <!-- Modal for room details -->
+        <div id="roomModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="modal-title">
+                        <i class="fas fa-home"></i>
+                        <span id="modalRoomTitle">Phòng 101</span>
+                    </div>
+                    <button class="close" onclick="closeModal()">&times;</button>
+                </div>
+                
+                <div class="modal-body">
+                    <div id="modalStatus" class="status-badge badge-safe">
+                        <i class="fas fa-shield-alt"></i>
+                        <span>An toàn</span>
+                    </div>
+
+                    <div class="sensor-details" id="sensorDetails">
+                        <!-- Sensor details will be populated by JavaScript -->
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button class="btn btn-info" onclick="closeModal()">
+                        <i class="fas fa-times"></i> Đóng
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal for Fire Department Message -->
+        <div id="messageModal" class="modal">
+            <div class="modal-content message-modal">
+                <div class="modal-header">
+                    <div class="modal-title">
+                        <i class="fas fa-fire-extinguisher"></i>
+                        <span>Tin nhắn gửi Cứu Hỏa 114</span>
+                    </div>
+                    <span class="close" onclick="closeMessageModal()">&times;</span>
+                </div>
+                
+                <div class="modal-body">
+                    <div class="message-preview">
+                        <h4>📱 Nội dung tin nhắn:</h4>
+                        <div class="message-content" id="messageContent">
+                            <!-- Message content will be populated by JavaScript -->
+                        </div>
+                    </div>
+
+                    <div class="message-actions">
+                        <button class="btn btn-success" onclick="copyMessage()">
+                            <i class="fas fa-copy"></i> Copy tin nhắn
+                        </button>
+                        <button class="btn btn-primary" onclick="sendSMS()">
+                            <i class="fas fa-sms"></i> Gửi SMS
+                        </button>
+                        <button class="btn btn-info" onclick="sendWhatsApp()">
+                            <i class="fab fa-whatsapp"></i> Gửi WhatsApp
+                        </button>
+                    </div>
+
+                    <div class="message-note">
+                        <i class="fas fa-info-circle"></i>
+                        <small>Tin nhắn đã bao gồm link để 114 xem chi tiết vị trí cháy trên bản đồ</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Alert Popup -->
+        <div class="alert-popup" id="alertPopup">
+            <h3><i class="fas fa-exclamation-triangle"></i> CẢNH BÁO CHÁY!</h3>
+            <div id="alertContent">
+                <p>Đang tải dữ liệu từ Firebase...</p>
+            </div>
         </div>
     </div>
 
-    <!-- Load Google APIs -->
-    <script src="https://apis.google.com/js/api.js"></script>
-
     <script>
-        // Cấu hình hệ thống
-        const CONFIG = {
-            CLIENT_ID: '1076801839575-pcqpsrg4k9al4p2c8fer9pfrntef1315.apps.googleusercontent.com',
-            SPREADSHEET_ID: '1JVXMPoAC9QmD_YmCamhY9iqgUsoH1wo1laCvFg9Z-vE',
-            PARENT_FOLDER_ID: '1cGPO867sCGWI48K2ypCDBM2ZYWbyLGsq',
-            SCOPES: 'https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/drive.file'
+        // Firebase Configuration - INTEGRATED
+        const FIREBASE_CONFIG = {
+            apiKey: "AIzaSyBbd-fpzWeVZMDivBzavWkCKJ7ZiQQffnw",
+            authDomain: "tkb-chuong.firebaseapp.com",
+            databaseURL: "https://tkb-chuong-default-rtdb.firebaseio.com/",
+            projectId: "tkb-chuong",
+            storageBucket: "tkb-chuong.firebasestorage.app",
+            messagingSenderId: "1264878125588",
+            appId: "1:1264878125588:web:4170ce9e4b257299a948c9",
+            measurementId: "G-SZK6YNTZWN"
         };
 
-        // Biến toàn cục
-        let authInstance = null;
-        let currentUser = null;
-        let reportData = [];
-        let submissionHistory = [];
-        let initAttempts = 0;
-        let isDemoMode = false;
-        const MAX_INIT_ATTEMPTS = 5;
+        // Global variables for Firebase data
+        let database = null;
+        let isConnected = false;
+        let roomsData = {};
+        let systemData = {};
+        let alertsData = {};
+        let statisticsData = {};
 
-        // Hàm debug và logging
-        function debugLog(message, type = 'info') {
-            const timestamp = new Date().toLocaleTimeString('vi-VN');
-            const logElement = document.getElementById('debugLog');
-            const className = `debug-${type}`;
+        // UI variables
+        let currentFloor = 0; // 0 = overview, 1-3 = floor
+        let emergencyCalls = {
+            fire: false,
+            ambulance: false,
+            police: false,
+            security: false
+        };
+
+        // Map variables
+        let map;
+        let buildingMarker;
+        let fireMarkers = [];
+        let buildingLocation = { lat: 10.7769, lng: 106.7009 };
+
+        // Chart variable
+        let temperatureChart;
+
+        // Auto-initialize Firebase on page load
+        function autoInitializeFirebase() {
+            showNotification('🔗 Đang kết nối Firebase tkb-chuong...', 'info');
             
-            console.log(`[${timestamp}] ${message}`);
-            
-            if (logElement) {
-                const logLine = `<div class="${className}">[${timestamp}] ${message}</div>`;
-                logElement.innerHTML += logLine;
-                logElement.scrollTop = logElement.scrollHeight;
-            }
-        }
-
-        function toggleDebug() {
-            const debugSection = document.getElementById('debugSection');
-            const isHidden = debugSection.style.display === 'none';
-            debugSection.style.display = isHidden ? 'block' : 'none';
-        }
-
-        function updateStatus(type, message) {
-            const statusBox = document.getElementById('statusBox');
-            statusBox.className = `status-box status-${type}`;
-            statusBox.innerHTML = message;
-        }
-
-        function showSection(sectionName) {
-            document.querySelectorAll('.login-section, .upload-section').forEach(section => {
-                section.classList.remove('active');
-            });
-            document.getElementById(sectionName).classList.add('active');
-            document.getElementById('statusBox').style.display = 'none';
-        }
-
-        // Khởi tạo khi trang load
-        window.addEventListener('load', function() {
-            debugLog('Trang web đã tải hoàn tất');
-            
-            // Cập nhật thông tin platform
-            const hostname = window.location.hostname;
-            const protocol = window.location.protocol;
-            document.getElementById('currentDomain').textContent = `${protocol}//${hostname}`;
-            
-            if (hostname.includes('vercel.app')) {
-                document.getElementById('platformName').textContent = 'Vercel Deployment';
-            } else if (hostname === 'localhost' || hostname === '127.0.0.1') {
-                document.getElementById('platformName').textContent = 'Local Development';
-            } else {
-                document.getElementById('platformName').textContent = 'Custom Domain';
-            }
-
-            debugLog(`Platform: ${document.getElementById('platformName').textContent}`);
-            debugLog(`Domain: ${document.getElementById('currentDomain').textContent}`);
-            
-            // Khởi tạo Google API với retry logic
-            initializeGoogleAPI();
-        });
-
-        function initializeGoogleAPI() {
-            debugLog('Bắt đầu khởi tạo Google API...');
-            updateStatus('loading', 'Đang khởi tạo Google APIs...');
-
-            if (typeof gapi === 'undefined') {
-                debugLog(`GAPI chưa sẵn sàng, thử lại lần ${initAttempts + 1}/${MAX_INIT_ATTEMPTS}`, 'warning');
-                
-                if (initAttempts < MAX_INIT_ATTEMPTS) {
-                    initAttempts++;
-                    setTimeout(initializeGoogleAPI, 2000);
-                } else {
-                    handleInitFailure('GAPI không thể tải sau nhiều lần thử');
-                }
-                return;
-            }
-
-            debugLog('GAPI đã tải, bắt đầu load modules...');
-            
-            gapi.load('auth2:client', {
-                callback: initClient,
-                onerror: function(error) {
-                    debugLog('Lỗi khi load GAPI modules: ' + JSON.stringify(error), 'error');
-                    handleInitFailure('Không thể load Google API modules');
-                }
-            });
-        }
-
-        async function initClient() {
             try {
-                debugLog('Khởi tạo Google API client...');
+                // Initialize Firebase with your config
+                if (firebase.apps.length === 0) {
+                    firebase.initializeApp(FIREBASE_CONFIG);
+                    showNotification('🔥 Firebase app tkb-chuong đã khởi tạo', 'success');
+                }
+
+                database = firebase.database();
                 
-                await gapi.client.init({
-                    clientId: CONFIG.CLIENT_ID,
-                    scope: CONFIG.SCOPES,
-                    discoveryDocs: [
-                        'https://sheets.googleapis.com/$discovery/rest?version=v4',
-                        'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'
-                    ]
+                // Test connection
+                database.ref('.info/connected').on('value', (snapshot) => {
+                    isConnected = snapshot.val() === true;
+                    updateConnectionStatus();
+                    
+                    if (isConnected) {
+                        setupRealtimeListeners();
+                        showNotification('✅ Kết nối thành công đến tkb-chuong Firebase!', 'success');
+                    }
                 });
 
-                debugLog('Google API client khởi tạo thành công', 'success');
-                
-                authInstance = gapi.auth2.getAuthInstance();
-                
-                // Lắng nghe thay đổi trạng thái đăng nhập
-                authInstance.isSignedIn.listen(updateSignInStatus);
-                
-                // Xử lý trạng thái đăng nhập hiện tại
-                const isSignedIn = authInstance.isSignedIn.get();
-                debugLog(`Trạng thái đăng nhập ban đầu: ${isSignedIn}`);
-                updateSignInStatus(isSignedIn);
-                
-                updateStatus('ready', 'Sẵn sàng đăng nhập với Google');
-                document.getElementById('signInBtn').disabled = false;
-                
             } catch (error) {
-                debugLog('Lỗi khởi tạo Google API client: ' + error.message, 'error');
-                handleInitFailure('Lỗi OAuth: ' + error.message);
+                showNotification(`❌ Lỗi Firebase: ${error.message}`, 'danger');
+                const firebaseBadge = document.querySelector('.firebase-badge');
+                if (firebaseBadge) {
+                    firebaseBadge.textContent = 'FIREBASE ERROR';
+                    firebaseBadge.style.background = 'linear-gradient(45deg, #ef4444, #dc2626)';
+                }
             }
         }
 
-        function updateSignInStatus(isSignedIn) {
-            debugLog(`Cập nhật trạng thái đăng nhập: ${isSignedIn}`);
+        // Update connection status UI
+        function updateConnectionStatus() {
+            const systemStatusIcon = document.getElementById('systemStatus');
+            const systemStatusText = document.getElementById('systemStatusText');
+            const connectionIcon = document.getElementById('connectionIcon');
+            const connectionText = document.getElementById('connectionText');
+            const firebaseBadge = document.querySelector('.firebase-badge');
+
+            if (isConnected) {
+                systemStatusIcon.className = 'fas fa-circle status-online';
+                systemStatusText.textContent = 'Online';
+                connectionIcon.className = 'fas fa-wifi';
+                connectionText.textContent = 'Online';
+
+                // Update Firebase badge
+                if (firebaseBadge) {
+                    firebaseBadge.classList.add('connected');
+                    firebaseBadge.textContent = 'FIREBASE CONNECTED';
+                }
+
+                showNotification('✅ Kết nối Firebase thành công!', 'success');
+            } else {
+                systemStatusIcon.className = 'fas fa-circle status-disconnected';
+                systemStatusText.textContent = 'Offline';
+                connectionIcon.className = 'fas fa-wifi-slash';
+                connectionText.textContent = 'Offline';
+
+                // Update Firebase badge
+                if (firebaseBadge) {
+                    firebaseBadge.classList.remove('connected');
+                    firebaseBadge.textContent = 'FIREBASE REALTIME';
+                }
+            }
+        }
+
+        // Setup realtime listeners
+        function setupRealtimeListeners() {
+            if (!database) return;
+
+            // Listen to rooms data
+            database.ref('rooms').on('value', (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    roomsData = data;
+                    updateRoomsUI();
+                    updateFloorTabs();
+                    updateStats();
+                    updateMap();
+                    updateAlertsUI();
+                    checkForAlerts();
+                }
+            });
+
+            // Listen to system status
+            database.ref('system').on('value', (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    systemData = data;
+                    updateSystemUI();
+                }
+            });
+
+            showNotification('🔄 Đã thiết lập realtime listeners', 'info');
+        }
+
+        // Update rooms UI with real data
+        function updateRoomsUI() {
+            if (currentFloor > 0) {
+                generateRooms(currentFloor);
+            }
             
-            if (isSignedIn) {
-                currentUser = authInstance.currentUser.get();
-                const profile = currentUser.getBasicProfile();
+            // Update modal if it's open
+            if (currentModalRoom && roomsData[currentModalRoom]) {
+                const roomNumber = currentModalRoom.replace('room_', '');
+                updateModalContent(roomNumber, roomsData[currentModalRoom], currentModalRoom);
+            }
+        }
+
+        // Update floor tabs based on room statuses
+        function updateFloorTabs() {
+            // Map Firebase rooms to floors
+            const floorMapping = {
+                1: ['room_101', 'room_102', 'room_103', 'room_104', 'room_105', 'room_106', 'room_107', 'room_108'],
+                2: ['room_201', 'room_202', 'room_203', 'room_204', 'room_205', 'room_206', 'room_207', 'room_208'],
+                3: ['room_301', 'room_302', 'room_303', 'room_304', 'room_305', 'room_306', 'room_307', 'room_308']
+            };
+
+            for (let floor = 1; floor <= 3; floor++) {
+                const tab = document.getElementById(`floor${floor}Tab`);
+                if (!tab) continue;
+
+                // Remove existing status classes
+                tab.classList.remove('floor-safe', 'floor-warning', 'floor-danger');
                 
-                debugLog(`Đăng nhập thành công: ${profile.getEmail()}`, 'success');
-                
-                showSection('uploadSection');
-                
-                // Hiển thị thông tin user
-                document.getElementById('userInfo').innerHTML = `
-                    <h3>👤 ${profile.getName()}</h3>
-                    <p>${profile.getEmail()}</p>
-                    <div style="margin-top: 10px; font-size: 12px; color: #666;">
-                        Đã đăng nhập lúc ${new Date().toLocaleTimeString('vi-VN')}
+                // Remove existing alert badge
+                const existingBadge = tab.querySelector('.floor-alert-badge');
+                if (existingBadge) {
+                    existingBadge.remove();
+                }
+
+                // Check rooms in this floor
+                let hasDanger = false;
+                let hasWarning = false;
+
+                const floorRooms = floorMapping[floor] || [];
+                floorRooms.forEach(roomId => {
+                    const room = roomsData[roomId];
+                    if (room) {
+                        if (room.status === 'danger') hasDanger = true;
+                        else if (room.status === 'warning') hasWarning = true;
+                    }
+                });
+
+                // Apply appropriate status
+                if (hasDanger) {
+                    tab.classList.add('floor-danger');
+                    tab.innerHTML += '<div class="floor-alert-badge"></div>';
+                } else if (hasWarning) {
+                    tab.classList.add('floor-warning');
+                    tab.innerHTML += '<div class="floor-alert-badge"></div>';
+                } else {
+                    tab.classList.add('floor-safe');
+                }
+            }
+        }
+
+        // Update statistics
+        function updateStats() {
+            let safe = 0, warning = 0, danger = 0, offline = 0;
+
+            Object.values(roomsData).forEach(room => {
+                switch(room.status) {
+                    case 'safe': safe++; break;
+                    case 'warning': warning++; break;
+                    case 'danger': danger++; break;
+                    default: offline++; break;
+                }
+            });
+
+            // Update UI
+            document.getElementById('statSafe').textContent = safe;
+            document.getElementById('statWarning').textContent = warning;
+            document.getElementById('statDanger').textContent = danger;
+            document.getElementById('statOffline').textContent = offline;
+            document.getElementById('safeRoomsCount').textContent = safe;
+
+            // Update system status based on danger rooms
+            const systemStatusIcon = document.getElementById('systemStatus');
+            const systemStatusText = document.getElementById('systemStatusText');
+
+            if (danger > 0) {
+                systemStatusIcon.className = 'fas fa-circle status-alarm';
+                systemStatusText.textContent = 'Có cảnh báo';
+            } else if (warning > 0) {
+                systemStatusIcon.className = 'fas fa-circle status-disconnected';
+                systemStatusText.textContent = 'Cảnh báo';
+            } else if (isConnected) {
+                systemStatusIcon.className = 'fas fa-circle status-online';
+                systemStatusText.textContent = 'An toàn';
+            }
+        }
+
+        // Update system UI
+        function updateSystemUI() {
+            if (systemData.lastUpdate) {
+                const date = new Date(systemData.lastUpdate);
+                document.getElementById('lastUpdate').textContent = date.toLocaleTimeString();
+            }
+        }
+
+        // Check for alerts and show popup
+        function checkForAlerts() {
+            const dangerRooms = [];
+            
+            Object.entries(roomsData).forEach(([roomId, room]) => {
+                if (room.status === 'danger') {
+                    // Extract room number from Firebase ID (room_201 -> 201)
+                    const roomNumber = roomId.replace('room_', '');
+                    
+                    dangerRooms.push({
+                        id: roomId,
+                        number: roomNumber,
+                        name: room.name || `Phòng ${roomNumber}`,
+                        temp: room.temperature,
+                        hasHuman: room.humanPresence,
+                        flameDetected: room.flameDetected
+                    });
+                }
+            });
+
+            if (dangerRooms.length > 0) {
+                showAlertPopup(dangerRooms[0]); // Show first danger room
+            }
+        }
+
+        function showAlertPopup(room) {
+            const popup = document.getElementById('alertPopup');
+            const content = document.getElementById('alertContent');
+            
+            const flameStatus = room.flameDetected ? 'Phát hiện lửa' : 'Không có lửa';
+            
+            content.innerHTML = `
+                <p>
+                    <strong>${room.name}:</strong> Nhiệt độ ${Math.round(room.temp * 10) / 10}°C<br>
+                    <strong>Trạng thái:</strong> ${flameStatus}<br>
+                    ${room.hasHuman ? '<strong style="color: #fff;">⚠️ CÓ NGƯỜI TRONG PHÒNG!</strong>' : '<strong>✅ Không có người</strong>'}
+                </p>
+            `;
+            
+            popup.style.display = 'block';
+            
+            // Auto hide after 10 seconds
+            setTimeout(() => {
+                popup.style.display = 'none';
+            }, 10000);
+        }
+
+        // Update alerts UI
+        function updateAlertsUI() {
+            const fireAlertsContainer = document.getElementById('fireAlertsMap');
+            fireAlertsContainer.innerHTML = '';
+
+            const dangerRooms = [];
+            Object.entries(roomsData).forEach(([roomId, room]) => {
+                if (room.status === 'danger' || room.status === 'warning') {
+                    // Extract room number from Firebase ID (room_201 -> 201)
+                    const roomNumber = roomId.replace('room_', '');
+                    const floor = Math.floor(parseInt(roomNumber) / 100);
+                    
+                    dangerRooms.push({
+                        id: roomId,
+                        number: roomNumber,
+                        name: room.name || `Phòng ${roomNumber}`,
+                        temp: room.temperature,
+                        floor: floor,
+                        hasHuman: room.humanPresence,
+                        status: room.status,
+                        flameDetected: room.flameDetected
+                    });
+                }
+            });
+
+            if (dangerRooms.length === 0) {
+                fireAlertsContainer.innerHTML = `
+                    <div style="text-align: center; color: rgba(74, 222, 128, 0.8); font-style: italic;">
+                        <i class="fas fa-check-circle"></i> Tất cả phòng đều an toàn
                     </div>
                 `;
-                
-                // Tải dữ liệu và thiết lập handlers
-                loadDataFromSheets();
-                setupFileHandlers();
-                
             } else {
-                debugLog('Chưa đăng nhập');
-                showSection('loginSection');
-                document.getElementById('signInBtn').disabled = false;
+                dangerRooms.forEach(room => {
+                    const alertDiv = document.createElement('div');
+                    alertDiv.className = 'fire-alert';
+                    const flameStatus = room.flameDetected ? 'Phát hiện lửa!' : 'Không có lửa';
+                    const humanStatus = room.hasHuman ? 'Có người!' : 'Không có người';
+                    
+                    alertDiv.innerHTML = `
+                        <i class="fas fa-${room.flameDetected ? 'fire' : 'exclamation-triangle'}"></i>
+                        <span>${room.name} - Tầng ${room.floor}</span>
+                        <small>${Math.round(room.temp * 10) / 10}°C, ${flameStatus}, ${humanStatus}</small>
+                    `;
+                    fireAlertsContainer.appendChild(alertDiv);
+                });
             }
         }
 
-        function performSignIn() {
-            if (!authInstance) {
-                showNotification('Google API chưa sẵn sàng. Vui lòng thử lại hoặc sử dụng Demo Mode.', 'error');
+        // Update map with fire locations
+        function updateMap() {
+            if (!map) return;
+
+            // Clear existing fire markers
+            fireMarkers.forEach(markerObj => {
+                if (markerObj.marker) {
+                    map.removeLayer(markerObj.marker);
+                }
+            });
+            fireMarkers = [];
+
+            // Add new fire markers from Firebase data
+            Object.entries(roomsData).forEach(([roomId, room]) => {
+                if (room.status === 'danger' || room.status === 'warning') {
+                    // Extract room number from Firebase ID (room_201 -> 201)
+                    const roomNumber = roomId.replace('room_', '');
+                    const floor = Math.floor(parseInt(roomNumber) / 100);
+                    
+                    // Simple offset around building center
+                    const offsetLat = (Math.random() - 0.5) * 0.002;
+                    const offsetLng = (Math.random() - 0.5) * 0.002;
+                    
+                    const fireLocation = {
+                        room: roomId,
+                        name: room.name || `Phòng ${roomNumber}`,
+                        floor: floor,
+                        lat: buildingLocation.lat + offsetLat,
+                        lng: buildingLocation.lng + offsetLng,
+                        temp: room.temperature,
+                        hasHuman: room.humanPresence || false,
+                        status: room.status,
+                        smoke: room.smokeLevel,
+                        flame: room.flameDetected
+                    };
+                    
+                    addFireMarker(fireLocation);
+                }
+            });
+        }
+
+        // Initialize Leaflet Map
+        function initMap() {
+            // Create map with OpenStreetMap tiles
+            map = L.map('map').setView([buildingLocation.lat, buildingLocation.lng], 16);
+
+            // Add OpenStreetMap tiles (FREE!)
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                maxZoom: 19
+            }).addTo(map);
+
+            // Add building marker with soft Google Maps style
+            const buildingIcon = L.divIcon({
+                html: `
+                    <div style="
+                        position: relative;
+                        width: 32px;
+                        height: 42px;
+                        background: #4285f4;
+                        border-radius: 50% 50% 50% 0;
+                        transform: rotate(-45deg);
+                        border: 3px solid white;
+                        box-shadow: 0 4px 12px rgba(66, 133, 244, 0.4);
+                        transition: all 0.3s ease;
+                    ">
+                        <div style="
+                            position: absolute;
+                            top: 50%;
+                            left: 50%;
+                            transform: translate(-50%, -50%) rotate(45deg);
+                            color: white;
+                            font-size: 16px;
+                            font-weight: bold;
+                            text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+                        ">🏢</div>
+                        <div style="
+                            position: absolute;
+                            bottom: -6px;
+                            left: 50%;
+                            transform: translateX(-50%);
+                            width: 0;
+                            height: 0;
+                            border-left: 4px solid transparent;
+                            border-right: 4px solid transparent;
+                            border-top: 6px solid white;
+                            filter: drop-shadow(0 2px 3px rgba(0,0,0,0.2));
+                        "></div>
+                    </div>
+                `,
+                className: 'google-style-marker',
+                iconSize: [32, 42],
+                iconAnchor: [16, 42]
+            });
+
+            buildingMarker = L.marker([buildingLocation.lat, buildingLocation.lng], { icon: buildingIcon })
+                .addTo(map)
+                .bindPopup(`
+                    <div style="font-family: Arial, sans-serif; min-width: 200px;">
+                        <h3 style="margin: 0 0 10px 0; color: #1e3c72;">🏢 Chung Cư An Toàn</h3>
+                        <p style="margin: 5px 0; color: #666;">📍 Firebase Realtime Database</p>
+                        <p style="margin: 5px 0; color: #666;">🏠 24 căn hộ - 3 tầng</p>
+                        <p style="margin: 10px 0 5px 0; font-weight: bold; color: #3b82f6;">🔥 Giám sát thời gian thực</p>
+                    </div>
+                `);
+        }
+
+        function addFireMarker(fire) {
+            // Create soft Google Maps style fire marker
+            const fireIcon = L.divIcon({
+                html: `
+                    <div style="
+                        position: relative;
+                        width: 28px;
+                        height: 38px;
+                        background: linear-gradient(135deg, #ea4335, #d33b2c);
+                        border-radius: 50% 50% 50% 0;
+                        transform: rotate(-45deg);
+                        border: 3px solid white;
+                        box-shadow: 0 4px 12px rgba(234, 67, 53, 0.5);
+                        animation: fireMarkerPulse 2s infinite;
+                        transition: all 0.3s ease;
+                    ">
+                        <div style="
+                            position: absolute;
+                            top: 50%;
+                            left: 50%;
+                            transform: translate(-50%, -50%) rotate(45deg);
+                            color: white;
+                            font-size: 14px;
+                            font-weight: bold;
+                            text-shadow: 0 1px 3px rgba(0,0,0,0.4);
+                        ">🔥</div>
+                        <div style="
+                            position: absolute;
+                            bottom: -6px;
+                            left: 50%;
+                            transform: translateX(-50%);
+                            width: 0;
+                            height: 0;
+                            border-left: 4px solid transparent;
+                            border-right: 4px solid transparent;
+                            border-top: 6px solid white;
+                            filter: drop-shadow(0 2px 3px rgba(0,0,0,0.3));
+                        "></div>
+                    </div>
+                `,
+                className: 'google-fire-marker',
+                iconSize: [28, 38],
+                iconAnchor: [14, 38]
+            });
+
+            const marker = L.marker([fire.lat, fire.lng], { icon: fireIcon })
+                .addTo(map)
+                .bindPopup(`
+                    <div style="font-family: Arial, sans-serif; min-width: 200px;">
+                        <h3 style="margin: 0 0 10px 0; color: #ef4444;">🔥 CẢNH BÁO CHÁY!</h3>
+                        <p style="margin: 5px 0;"><strong>Phòng:</strong> ${fire.name} (Tầng ${fire.floor})</p>
+                        <p style="margin: 5px 0;"><strong>Nhiệt độ:</strong> ${Math.round(fire.temp * 10) / 10}°C</p>
+                        <p style="margin: 5px 0;"><strong>Phát hiện lửa:</strong> ${fire.flame ? '🔥 CÓ LỬA!' : '✅ Không có lửa'}</p>
+                        <p style="margin: 5px 0;"><strong>Người trong phòng:</strong> ${fire.hasHuman ? '⚠️ CÓ NGƯỜI!' : '✅ Không có người'}</p>
+                        <p style="margin: 5px 0;"><strong>Mức độ:</strong> <span style="color: #ef4444; font-weight: bold;">${fire.status === 'danger' ? 'NGUY HIỂM' : 'CẢNH BÁO'}</span></p>
+                        <button onclick="focusOnRoom('${fire.room}')" style="background: #ef4444; color: white; border: none; padding: 8px 16px; border-radius: 5px; margin-top: 10px; cursor: pointer;">
+                            🏃‍♂️ Xem chi tiết phòng
+                        </button>
+                    </div>
+                `);
+
+            // Store marker
+            fireMarkers.push({ marker });
+        }
+
+        // Map control functions
+        function getCurrentLocation() {
+            if (!navigator.geolocation) {
+                showNotification('Trình duyệt không hỗ trợ GPS', 'warning');
                 return;
             }
-            
-            debugLog('Đang thực hiện đăng nhập...');
-            document.getElementById('signInBtn').disabled = true;
-            document.getElementById('signInBtn').innerHTML = '<span style="margin-right: 8px;">⏳</span>Đang đăng nhập...';
-            
-            authInstance.signIn()
-                .then(() => {
-                    debugLog('Đăng nhập thành công', 'success');
-                })
-                .catch(error => {
-                    debugLog('Lỗi đăng nhập: ' + error.error, 'error');
-                    showNotification('Lỗi đăng nhập: ' + error.error, 'error');
-                    
-                    // Reset button
-                    document.getElementById('signInBtn').disabled = false;
-                    document.getElementById('signInBtn').innerHTML = '<span>🔐</span> Đăng nhập với Google';
-                    
-                    // Hiển thị hướng dẫn OAuth
-                    document.getElementById('oauthHelp').style.display = 'block';
-                });
-        }
 
-        function handleInitFailure(reason) {
-            debugLog(`Khởi tạo thất bại: ${reason}`, 'error');
-            updateStatus('error', 'Không thể khởi tạo Google APIs');
-            
-            showNotification(
-                `Không thể kết nối Google APIs: ${reason}\n\n` +
-                'Có thể do:\n' +
-                '• Domain chưa được thêm vào OAuth settings\n' +
-                '• Mạng chặn Google APIs\n' +
-                '• Cấu hình OAuth chưa đúng\n\n' +
-                'Bạn có thể sử dụng Demo Mode để test chức năng.',
-                'error'
+            showNotification('🔍 Đang xác định vị trí...', 'info');
+
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const currentLat = position.coords.latitude;
+                    const currentLng = position.coords.longitude;
+                    
+                    buildingLocation.lat = currentLat;
+                    buildingLocation.lng = currentLng;
+                    
+                    if (map) {
+                        map.setView([currentLat, currentLng], 16);
+                        
+                        if (buildingMarker) {
+                            map.removeLayer(buildingMarker);
+                        }
+                        
+                        // Create soft Google Maps style emergency marker
+                        const buildingIcon = L.divIcon({
+                            html: `
+                                <div style="
+                                    position: relative;
+                                    width: 36px;
+                                    height: 46px;
+                                    background: linear-gradient(135deg, #ea4335, #d33b2c);
+                                    border-radius: 50% 50% 50% 0;
+                                    transform: rotate(-45deg);
+                                    border: 3px solid white;
+                                    box-shadow: 0 6px 16px rgba(234, 67, 53, 0.5);
+                                    animation: emergencyPulse 1.5s infinite;
+                                ">
+                                    <div style="
+                                        position: absolute;
+                                        top: 50%;
+                                        left: 50%;
+                                        transform: translate(-50%, -50%) rotate(45deg);
+                                        color: white;
+                                        font-size: 18px;
+                                        font-weight: bold;
+                                        text-shadow: 0 2px 4px rgba(0,0,0,0.4);
+                                    ">🚨</div>
+                                    <div style="
+                                        position: absolute;
+                                        bottom: -8px;
+                                        left: 50%;
+                                        transform: translateX(-50%);
+                                        width: 0;
+                                        height: 0;
+                                        border-left: 5px solid transparent;
+                                        border-right: 5px solid transparent;
+                                        border-top: 8px solid white;
+                                        filter: drop-shadow(0 3px 5px rgba(0,0,0,0.3));
+                                    "></div>
+                                </div>
+                            `,
+                            className: 'google-emergency-marker',
+                            iconSize: [36, 46],
+                            iconAnchor: [18, 46]
+                        });
+
+                        buildingMarker = L.marker([currentLat, currentLng], { icon: buildingIcon })
+                            .addTo(map)
+                            .bindPopup(`
+                                <div style="font-family: Arial, sans-serif; min-width: 250px;">
+                                    <h3 style="margin: 0 0 10px 0; color: #ef4444;">🚨 TRUNG TÂM BÁO CHÁY</h3>
+                                    <p style="margin: 5px 0; color: #666;"><strong>📍 Vị trí:</strong> ${currentLat.toFixed(6)}, ${currentLng.toFixed(6)}</p>
+                                    <p style="margin: 5px 0; color: #666;"><strong>⏰ Thời gian:</strong> ${new Date().toLocaleString('vi-VN')}</p>
+                                    <p style="margin: 5px 0; color: #666;"><strong>📡 Độ chính xác:</strong> ±${Math.round(position.coords.accuracy)}m</p>
+                                    <div style="margin: 10px 0; padding: 10px; background: rgba(239,68,68,0.1); border-radius: 5px; border-left: 4px solid #ef4444;">
+                                        <strong style="color: #ef4444;">⚠️ Firebase Realtime</strong><br>
+                                        <small>Dữ liệu được cập nhật từ Firebase Database</small>
+                                    </div>
+                                </div>
+                            `)
+                            .openPopup();
+                        
+                        updateMap();
+                        
+                        document.getElementById('buildingLocation').textContent = `${currentLat.toFixed(4)}, ${currentLng.toFixed(4)}`;
+                    }
+                    
+                    showNotification(`🎯 Đã cập nhật vị trí: ${currentLat.toFixed(4)}, ${currentLng.toFixed(4)}`, 'success');
+                },
+                (error) => {
+                    showNotification('⚠️ Không thể lấy vị trí GPS. Sử dụng vị trí mặc định.', 'warning');
+                    document.getElementById('buildingLocation').textContent = 'Phuòng Cam Đường, Tỉnh Lào Cai';
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 8000,
+                    maximumAge: 60000
+                }
             );
-
-            // Hiển thị login với demo option
-            showSection('loginSection');
-            document.getElementById('signInBtn').disabled = true;
-            document.getElementById('oauthHelp').style.display = 'block';
         }
 
-        function switchToDemo() {
-            debugLog('Chuyển sang chế độ Demo', 'info');
-            isDemoMode = true;
-            updateStatus('demo', 'Chế độ Demo - Mô phỏng đầy đủ chức năng');
+        function centerMap() {
+            if (map) {
+                map.setView([buildingLocation.lat, buildingLocation.lng], 16);
+                showNotification('Đã về trung tâm bản đồ', 'info');
+            }
+        }
+
+        function showFireRoute() {
+            const fireStationLocation = { lat: 10.7700, lng: 106.6950 };
             
-            showSection('uploadSection');
+            // Create soft Google Maps style fire station marker
+            const fireStationIcon = L.divIcon({
+                html: `
+                    <div style="
+                        position: relative;
+                        width: 32px;
+                        height: 42px;
+                        background: linear-gradient(135deg, #dc2626, #b91c1c);
+                        border-radius: 50% 50% 50% 0;
+                        transform: rotate(-45deg);
+                        border: 3px solid white;
+                        box-shadow: 0 4px 12px rgba(220, 38, 38, 0.4);
+                        transition: all 0.3s ease;
+                    ">
+                        <div style="
+                            position: absolute;
+                            top: 50%;
+                            left: 50%;
+                            transform: translate(-50%, -50%) rotate(45deg);
+                            color: white;
+                            font-size: 16px;
+                            font-weight: bold;
+                            text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+                        ">🚒</div>
+                        <div style="
+                            position: absolute;
+                            bottom: -6px;
+                            left: 50%;
+                            transform: translateX(-50%);
+                            width: 0;
+                            height: 0;
+                            border-left: 4px solid transparent;
+                            border-right: 4px solid transparent;
+                            border-top: 6px solid white;
+                            filter: drop-shadow(0 2px 3px rgba(0,0,0,0.2));
+                        "></div>
+                    </div>
+                `,
+                className: 'google-station-marker',
+                iconSize: [32, 42],
+                iconAnchor: [16, 42]
+            });
+
+            const fireStationMarker = L.marker([fireStationLocation.lat, fireStationLocation.lng], { icon: fireStationIcon })
+                .addTo(map)
+                .bindPopup('<strong>🚒 Trạm Cứu Hỏa</strong><br>Khoảng cách: ~2.5km<br>Thời gian: ~8 phút');
+
+            const routeLine = L.polyline([
+                [fireStationLocation.lat, fireStationLocation.lng],
+                [buildingLocation.lat, buildingLocation.lng]
+            ], {
+                color: '#ef4444',
+                weight: 4,
+                dashArray: '10, 10'
+            }).addTo(map);
+
+            const group = new L.featureGroup([fireStationMarker, buildingMarker]);
+            map.fitBounds(group.getBounds().pad(0.1));
+
+            showNotification('Đường đi cứu hỏa: ~2.5km, thời gian: ~8 phút', 'info');
+        }
+
+        function focusOnRoom(roomNumber) {
+            if (map) {
+                map.closePopup();
+            }
             
-            // Thiết lập thông tin demo user
-            document.getElementById('userInfo').innerHTML = `
-                <h3>🎭 Demo User</h3>
-                <p>demo@example.com</p>
-                <div class="demo-mode-info">
-                    <strong>Chế độ Demo</strong><br>
-                    Tất cả chức năng đều hoạt động bình thường, chỉ không upload thực tế lên Google Drive
+            // Extract room number from Firebase ID (room_201 -> 201)
+            const displayRoomNumber = roomNumber.replace('room_', '');
+            const floor = Math.floor(parseInt(displayRoomNumber) / 100);
+            
+            showFloor(floor);
+            
+            setTimeout(() => {
+                const room = roomsData[roomNumber];
+                if (room) {
+                    openRoomModal(displayRoomNumber, room, roomNumber);
+                }
+            }, 500);
+            
+            showNotification(`Đang chuyển đến phòng ${displayRoomNumber}`, 'info');
+        }
+
+        // Initialize chart
+        function initChart() {
+            const ctx = document.getElementById('temperatureChart').getContext('2d');
+            
+            temperatureChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['10 phút trước', '8 phút trước', '6 phút trước', '4 phút trước', '2 phút trước', 'Hiện tại'],
+                    datasets: [{
+                        label: 'Nhiệt độ TB',
+                        data: [25, 26, 28, 32, 35, 25], // Dữ liệu mặc định
+                        borderColor: '#ef4444',
+                        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                        tension: 0.4,
+                        fill: true,
+                        pointBackgroundColor: '#ef4444',
+                        pointBorderColor: '#ffffff',
+                        pointBorderWidth: 2,
+                        pointRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { 
+                            labels: { 
+                                color: 'white',
+                                font: {
+                                    size: 12
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: { 
+                            ticks: { 
+                                color: 'white',
+                                font: {
+                                    size: 10
+                                }
+                            }, 
+                            grid: { 
+                                color: 'rgba(255,255,255,0.1)' 
+                            }
+                        },
+                        y: { 
+                            ticks: { 
+                                color: 'white',
+                                font: {
+                                    size: 10
+                                },
+                                callback: function(value) {
+                                    return value + '°C';
+                                }
+                            }, 
+                            grid: { 
+                                color: 'rgba(255,255,255,0.1)' 
+                            },
+                            min: 0,
+                            max: 100
+                        }
+                    }
+                }
+            });
+
+            // Start updating chart every 10 seconds
+            setInterval(updateChart, 10000);
+        }
+
+        function updateChart() {
+            if (!temperatureChart || !roomsData || Object.keys(roomsData).length === 0) {
+                return;
+            }
+
+            const now = new Date();
+            const timeLabel = now.toLocaleTimeString('vi-VN', { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
+            
+            // Calculate average temperature from Firebase data
+            const temperatures = [];
+            Object.values(roomsData).forEach(room => {
+                if (room.temperature && typeof room.temperature === 'number') {
+                    temperatures.push(room.temperature);
+                }
+            });
+
+            // If no data, use default
+            let avgTemp = 25;
+            if (temperatures.length > 0) {
+                avgTemp = temperatures.reduce((sum, temp) => sum + temp, 0) / temperatures.length;
+            }
+
+            // Update chart data - round to 1 decimal place
+            const data = temperatureChart.data;
+            data.labels.push(timeLabel);
+            data.datasets[0].data.push(Math.round(avgTemp * 10) / 10); // Round to 1 decimal
+
+            // Keep only last 10 data points
+            if (data.labels.length > 10) {
+                data.labels.shift();
+                data.datasets[0].data.shift();
+            }
+
+            // Update chart color based on temperature
+            const color = avgTemp > 60 ? '#ef4444' : avgTemp > 35 ? '#f59e0b' : '#4ade80';
+            data.datasets[0].borderColor = color;
+            data.datasets[0].backgroundColor = color.replace(')', ', 0.1)').replace('rgb', 'rgba');
+            data.datasets[0].pointBackgroundColor = color;
+
+            temperatureChart.update('none'); // No animation for performance
+        }
+
+        // Show floor rooms
+        function showFloor(floor) {
+            currentFloor = floor;
+            
+            document.getElementById('buildingOverview').style.display = 'none';
+            document.getElementById('floorInstruction').style.display = 'none';
+            
+            document.querySelectorAll('.floor-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.getElementById(`floor${floor}Tab`).classList.add('active');
+            
+            generateRooms(floor);
+            document.getElementById('roomsGrid').classList.add('show');
+        }
+
+        function generateRooms(floor) {
+            const grid = document.getElementById('roomsGrid');
+            grid.innerHTML = '';
+            
+            // Map Firebase room IDs to floor layout
+            const roomMapping = {
+                1: ['room_101', 'room_102', 'room_103', 'room_104', 'room_105', 'room_106', 'room_107', 'room_108'],
+                2: ['room_201', 'room_202', 'room_203', 'room_204', 'room_205', 'room_206', 'room_207', 'room_208'],
+                3: ['room_301', 'room_302', 'room_303', 'room_304', 'room_305', 'room_306', 'room_307', 'room_308']
+            };
+            
+            const floorRooms = roomMapping[floor] || [];
+            
+            for (let i = 0; i < 8; i++) {
+                const firebaseRoomId = floorRooms[i];
+                const displayRoomId = `${floor}0${i + 1}`;
+                
+                // Get room data from Firebase
+                const room = firebaseRoomId && roomsData[firebaseRoomId] ? roomsData[firebaseRoomId] : {
+                    temperature: 25,
+                    status: 'safe',
+                    online: false
+                };
+                
+                const roomElement = document.createElement('div');
+                roomElement.className = `room-square room-${room.status || 'safe'}`;
+                roomElement.onclick = () => openRoomModal(displayRoomId, room, firebaseRoomId);
+                
+                roomElement.innerHTML = `
+                    <div class="room-number">${displayRoomId}</div>
+                    <div class="room-temp">${room.temperature ? Math.round(room.temperature * 10) / 10 : '25.0'}°C</div>
+                    ${room.status === 'danger' ? '<div class="alarm-indicator"></div>' : ''}
+                `;
+                
+                grid.appendChild(roomElement);
+            }
+        }
+
+        // Global variable to track current modal room
+        let currentModalRoom = null;
+
+        function openRoomModal(displayRoomId, room, firebaseRoomId) {
+            const modal = document.getElementById('roomModal');
+            currentModalRoom = firebaseRoomId; // Store for real-time updates
+            
+            // Initial render
+            updateModalContent(displayRoomId, room, firebaseRoomId);
+            modal.style.display = 'block';
+        }
+
+        function updateModalContent(displayRoomId, room, firebaseRoomId) {
+            const title = document.getElementById('modalRoomTitle');
+            const status = document.getElementById('modalStatus');
+            const details = document.getElementById('sensorDetails');
+            
+            // Get real-time data from Firebase if available
+            const currentRoom = firebaseRoomId && roomsData[firebaseRoomId] ? roomsData[firebaseRoomId] : room;
+            
+            title.textContent = `${currentRoom.name || `Phòng ${displayRoomId}`}`;
+            
+            // Update status badge with real-time data
+            status.className = `status-badge badge-${currentRoom.status || 'safe'}`;
+            let statusText = '';
+            let statusIcon = '';
+            
+            switch(currentRoom.status) {
+                case 'safe':
+                    statusText = 'An toàn';
+                    statusIcon = 'fas fa-shield-alt';
+                    break;
+                case 'warning':
+                    statusText = 'Cảnh báo';
+                    statusIcon = 'fas fa-exclamation-triangle';
+                    break;
+                case 'danger':
+                    statusText = 'NGUY HIỂM';
+                    statusIcon = 'fas fa-fire';
+                    break;
+                default:
+                    statusText = firebaseRoomId ? 'Offline' : 'Không có dữ liệu';
+                    statusIcon = 'fas fa-wifi-slash';
+                    break;
+            }
+            
+            status.innerHTML = `<i class="${statusIcon}"></i><span>${statusText}</span>`;
+            
+            // Generate sensor details with real-time data
+            let detailsHTML = `
+                <div class="sensor-detail">
+                    <div class="sensor-detail-value">${currentRoom.temperature ? Math.round(currentRoom.temperature * 10) / 10 : '25.0'}°C</div>
+                    <div class="sensor-detail-label">Nhiệt độ</div>
+                </div>
+                <div class="sensor-detail">
+                    <div class="sensor-detail-value">${currentRoom.humidity ? Math.round(currentRoom.humidity) : '60'}%</div>
+                    <div class="sensor-detail-label">Độ ẩm</div>
+                </div>
+                <div class="sensor-detail">
+                    <div class="sensor-detail-value">${currentRoom.smokeLevel ? Math.round(currentRoom.smokeLevel) : '100'}</div>
+                    <div class="sensor-detail-label">Mức khói</div>
+                </div>
+                <div class="sensor-detail">
+                    <div class="sensor-detail-value">
+                        <i class="fas fa-${currentRoom.flameDetected ? 'fire' : 'check-circle'}" 
+                           style="color: ${currentRoom.flameDetected ? '#ef4444' : '#4ade80'}"></i>
+                    </div>
+                    <div class="sensor-detail-label">${currentRoom.flameDetected ? 'Phát hiện lửa' : 'Không có lửa'}</div>
                 </div>
             `;
             
-            // Mock current user cho demo
-            currentUser = {
-                getBasicProfile: () => ({
-                    getEmail: () => 'demo@example.com',
-                    getName: () => 'Demo User'
-                })
+            // Show human presence for danger/warning
+            if (currentRoom.status === 'danger' || currentRoom.status === 'warning') {
+                detailsHTML += `
+                    <div class="sensor-detail">
+                        <div class="sensor-detail-value">
+                            <i class="fas fa-${currentRoom.humanPresence ? 'user' : 'user-slash'}" 
+                               style="color: ${currentRoom.humanPresence ? '#ef4444' : '#4ade80'}"></i>
+                        </div>
+                        <div class="sensor-detail-label">${currentRoom.humanPresence ? 'CÓ NGƯỜI' : 'Không có người'}</div>
+                    </div>
+                    <div class="sensor-detail">
+                        <div class="sensor-detail-value">${currentRoom.sensors?.temperatureSensor?.battery ? Math.round(currentRoom.sensors.temperatureSensor.battery) : '85'}%</div>
+                        <div class="sensor-detail-label">Pin cảm biến</div>
+                    </div>
+                `;
+            }
+            
+            // Show Firebase connection status
+            if (firebaseRoomId) {
+                detailsHTML += `
+                    <div class="sensor-detail firebase-info">
+                        <div class="sensor-detail-value">
+                            <i class="fas fa-database"></i> ${firebaseRoomId}
+                        </div>
+                        <div class="sensor-detail-label">Firebase Realtime</div>
+                    </div>
+                `;
+            } else {
+                detailsHTML += `
+                    <div class="sensor-detail demo-info">
+                        <div class="sensor-detail-value">
+                            <i class="fas fa-exclamation-triangle"></i> Chưa có dữ liệu
+                        </div>
+                        <div class="sensor-detail-label">Phòng demo</div>
+                    </div>
+                `;
+            }
+            
+            details.innerHTML = detailsHTML;
+        }
+
+        function closeModal() {
+            document.getElementById('roomModal').style.display = 'none';
+            currentModalRoom = null; // Clear tracking
+        }
+
+        // Emergency call functions
+        function callEmergency(type) {
+            const statusElement = document.getElementById(`${type}Status`);
+            const messages = {
+                fire: 'Đang gọi Cứu Hỏa 114...',
+                ambulance: 'Đang gọi Cấp Cứu 115...',
+                police: 'Đang gọi Công An 113...',
+                security: 'Đang gọi Bảo Vệ nội bộ...'
             };
-            
-            loadDemoData();
-            setupFileHandlers();
-        }
 
-        function loadDemoData() {
-            debugLog('Tải dữ liệu demo...');
+            statusElement.classList.add('calling');
+            emergencyCalls[type] = true;
             
-            // Dữ liệu demo mô phỏng thực tế
-            reportData = [
-                ['1', 'Phòng Tài Chính', 'Đại học Bách Khoa', 'Báo cáo tài chính quý III/2024', 'TC_Q3_2024', 'Chờ'],
-                ['2', 'Ban Giám Hiệu', 'Đại học Bách Khoa', 'Báo cáo hoạt động tháng 8/2024', 'BGH_T8_2024', 'Chờ'],
-                ['3', 'Phòng Đào Tạo', 'Đại học Bách Khoa', 'Báo cáo học vụ học kỳ I', 'DT_HK1_2024', 'Chờ'],
-                ['4', 'Phòng Khoa Học', 'Đại học Bách Khoa', 'Báo cáo nghiên cứu khoa học', 'NCKH_2024', 'Chờ'],
-                ['5', 'Phòng Hành Chính', 'Đại học Bách Khoa', 'Báo cáo nhân sự tháng 8', 'HC_T8_2024', 'Chờ']
-            ];
+            showNotification(messages[type], 'warning');
             
-            // Lịch sử nộp mô phỏng (đã nộp một số báo cáo)
-            submissionHistory = [
-                ['demo@example.com', 'BGH_T8_2024', '25/08/2024 14:30', 'DHBK_BGH_T8_2024_demo.pdf'],
-                ['demo@example.com', 'HC_T8_2024', '26/08/2024 09:15', 'DHBK_HC_T8_2024_demo.xlsx']
-            ];
-            
-            debugLog(`Demo data: ${reportData.length} báo cáo, ${submissionHistory.length} đã nộp`);
-            displayReports();
-        }
-
-        async function loadDataFromSheets() {
-            try {
-                debugLog('Đang tải dữ liệu từ Google Sheets...');
-                showLoadingReports(true);
+            setTimeout(() => {
+                statusElement.classList.remove('calling');
+                emergencyCalls[type] = false;
                 
-                // Tải dữ liệu người nhận
-                const recipientsResponse = await gapi.client.sheets.spreadsheets.values.get({
-                    spreadsheetId: CONFIG.SPREADSHEET_ID,
-                    range: 'NguoiNhan!A:F'
-                });
-                
-                debugLog('Đã tải dữ liệu người nhận từ Sheet', 'success');
-
-                // Tải lịch sử nộp
-                let historyResponse;
-                try {
-                    historyResponse = await gapi.client.sheets.spreadsheets.values.get({
-                        spreadsheetId: CONFIG.SPREADSHEET_ID,
-                        range: 'LichSuNop!A:D'
-                    });
-                    debugLog('Đã tải lịch sử nộp từ Sheet', 'success');
-                } catch (error) {
-                    debugLog('Sheet LichSuNop không tồn tại, tạo mới...', 'warning');
-                    await createHistorySheet();
-                    historyResponse = { result: { values: [['Email người nộp', 'Kí hiệu báo cáo', 'Ngày giờ nộp', 'Tên file']] } };
+                if (type === 'fire') {
+                    showFireDeptMessage();
+                } else {
+                    const successMessages = {
+                        ambulance: 'Đã kết nối Cấp Cứu 115!',
+                        police: 'Đã kết nối Công An 113!',
+                        security: 'Đã kết nối Bảo Vệ tòa nhà!'
+                    };
+                    showNotification(successMessages[type], 'success');
                 }
-
-                processSheetData(recipientsResponse.result.values || [], historyResponse.result.values || []);
-                
-            } catch (error) {
-                debugLog('Lỗi tải dữ liệu từ Sheets: ' + error.message, 'error');
-                showNotification('Lỗi tải dữ liệu từ Google Sheets: ' + error.message, 'error');
-            } finally {
-                showLoadingReports(false);
-            }
+            }, 3000);
         }
 
-        function processSheetData(recipients, history) {
-            const userEmail = currentUser.getBasicProfile().getEmail();
+        function showFireDeptMessage() {
+            const currentTime = new Date().toLocaleString('vi-VN');
+            const locationInfo = document.getElementById('buildingLocation').textContent;
+            const currentUrl = window.location.href;
             
-            // Lọc báo cáo chờ nộp
-            reportData = recipients.slice(1).filter(row => row && row.length >= 6 && row[5] === 'Chờ');
-            
-            // Lọc lịch sử của user hiện tại
-            submissionHistory = history.slice(1).filter(row => row && row.length >= 2 && row[0] === userEmail);
-            
-            debugLog(`Đã xử lý: ${reportData.length} báo cáo chờ, ${submissionHistory.length} đã nộp`);
-            displayReports();
-        }
-
-        function displayReports() {
-            const reportList = document.getElementById('reportList');
-            showLoadingReports(false);
-            
-            if (reportData.length === 0) {
-                reportList.innerHTML = `
-                    <div class="empty-state">
-                        <div class="icon">📄</div>
-                        <h3>Không có báo cáo nào</h3>
-                        <p>Hiện tại không có báo cáo nào cần nộp.</p>
-                    </div>
-                `;
-                updateStats(0, 0, 0);
-                return;
-            }
-
-            const userEmail = currentUser ? currentUser.getBasicProfile().getEmail() : 'demo@example.com';
-            let submittedCount = 0;
-            
-            const reportsHTML = reportData.map((report, index) => {
-                const [stt, tenNguoiNhan, donVi, loaiBaoCao, kiHieu] = report;
-                
-                const isSubmitted = submissionHistory.some(history => history[1] === kiHieu);
-                const submissionInfo = submissionHistory.find(history => history[1] === kiHieu);
-                
-                if (isSubmitted) submittedCount++;
-                
-                return `
-                    <div class="report-item ${isSubmitted ? 'submitted' : ''} fade-in" 
-                         onclick="selectReport(${index})" 
-                         style="animation-delay: ${index * 0.1}s">
-                        <input type="radio" 
-                               name="selectedReport" 
-                               value="${index}" 
-                               ${isSubmitted ? 'disabled' : ''}
-                               onchange="validateForm()">
-                        <div class="report-info">
-                            <div class="report-title">
-                                ${isSubmitted ? '✅ ' : '📋 '}${loaiBaoCao}
-                            </div>
-                            <div class="report-recipient">
-                                👤 ${tenNguoiNhan} - ${donVi}
-                            </div>
-                            <span class="report-code">${kiHieu}</span>
-                            ${isSubmitted ? `<div class="report-status">✓ Đã nộp vào ${submissionInfo[2]}</div>` : ''}
-                        </div>
-                    </div>
-                `;
-            }).join('');
-
-            reportList.innerHTML = reportsHTML;
-            reportList.style.display = 'block';
-            
-            // Cập nhật thống kê
-            updateStats(reportData.length, submittedCount, reportData.length - submittedCount);
-        }
-
-        function selectReport(index) {
-            const radio = document.querySelector(`input[name="selectedReport"][value="${index}"]`);
-            if (radio && !radio.disabled) {
-                radio.checked = true;
-                validateForm();
-                
-                // Visual feedback
-                document.querySelectorAll('.report-item').forEach(item => {
-                    item.style.borderColor = '#e1e5e9';
-                });
-                radio.closest('.report-item').style.borderColor = '#667eea';
-            }
-        }
-
-        function updateStats(total, submitted, pending) {
-            document.getElementById('totalReports').textContent = total;
-            document.getElementById('submittedReports').textContent = submitted;
-            document.getElementById('pendingReports').textContent = pending;
-        }
-
-        function showLoadingReports(show) {
-            document.getElementById('loadingReports').style.display = show ? 'block' : 'none';
-            document.getElementById('reportList').style.display = show ? 'none' : 'block';
-        }
-
-        function setupFileHandlers() {
-            const fileInput = document.getElementById('reportFile');
-            const fileInputArea = document.getElementById('fileInputArea');
-            const schoolName = document.getElementById('schoolName');
-
-            // File input change
-            if (fileInput && !fileInput.hasEventListener) {
-                fileInput.addEventListener('change', handleFileSelect);
-                fileInput.hasEventListener = true;
-            }
-
-            // School name input
-            if (schoolName && !schoolName.hasEventListener) {
-                schoolName.addEventListener('input', function() {
-                    validateForm();
-                    // Auto-uppercase
-                    this.value = this.value.toUpperCase();
-                });
-                schoolName.hasEventListener = true;
-            }
-            
-            // Drag & drop handlers
-            if (fileInputArea && !fileInputArea.hasEventListener) {
-                fileInputArea.addEventListener('dragover', function(e) {
-                    e.preventDefault();
-                    fileInputArea.classList.add('dragover');
-                });
-                
-                fileInputArea.addEventListener('dragleave', function() {
-                    fileInputArea.classList.remove('dragover');
-                });
-                
-                fileInputArea.addEventListener('drop', function(e) {
-                    e.preventDefault();
-                    fileInputArea.classList.remove('dragover');
+            // Get current fire alerts from Firebase data
+            const fireAlerts = [];
+            Object.entries(roomsData).forEach(([roomId, room]) => {
+                if (room.status === 'danger') {
+                    const roomNumber = roomId.replace('room_', '');
+                    const floor = Math.floor(parseInt(roomNumber) / 100);
                     
-                    const files = e.dataTransfer.files;
-                    if (files.length > 0) {
-                        fileInput.files = files;
-                        handleFileSelect();
-                    }
-                });
-                
-                // Click handler
-                fileInputArea.addEventListener('click', function() {
-                    fileInput.click();
-                });
-                
-                fileInputArea.hasEventListener = true;
+                    fireAlerts.push({
+                        room: roomNumber,
+                        floor: floor,
+                        temp: room.temperature,
+                        hasHuman: room.humanPresence,
+                        flameDetected: room.flameDetected
+                    });
+                }
+            });
+            
+            let alertsText = fireAlerts.map(alert => {
+                const flameStatus = alert.flameDetected ? 'Phát hiện lửa!' : 'Không có lửa';
+                const humanStatus = alert.hasHuman ? 'CÓ NGƯỜI!' : 'Không có người';
+                return `• Phòng ${alert.room} (Tầng ${alert.floor}): ${Math.round(alert.temp * 10) / 10}°C - ${flameStatus} - ${humanStatus}`;
+            }).join('\n');
+            
+            if (alertsText === '') {
+                alertsText = '• Không có cảnh báo nguy hiểm hiện tại';
             }
+
+            const message = `🚨 KHẨN CẤP - BÁO CHÁY 🚨
+
+⏰ Thời gian: ${currentTime}
+📍 Địa điểm: ${locationInfo}
+
+🔥 TÌNH HUỐNG (Firebase Realtime):
+${alertsText}
+
+🗺️ XEM CHI TIẾT VỊ TRÍ:
+${currentUrl}
+
+⚠️ YÊU CẦU HỖ TRỢ CỨU HỎA NGAY LẬP TỨC!
+
+Dữ liệu từ: Firebase Realtime Database
+Liên hệ: [SĐT trung tâm báo cháy]`;
+
+            document.getElementById('messageModal').style.display = 'block';
+            document.getElementById('messageContent').textContent = message;
+            
+            showNotification('✅ Đã tạo tin nhắn gửi 114!', 'success');
         }
 
-        function handleFileSelect() {
-            const fileInput = document.getElementById('reportFile');
-            const selectedFileDiv = document.getElementById('selectedFile');
+        function copyMessage() {
+            const messageContent = document.getElementById('messageContent').textContent;
             
-            if (fileInput.files.length > 0) {
-                const file = fileInput.files[0];
-                const allowedTypes = ['.pdf', '.doc', '.docx', '.xls', '.xlsx', '.mp4'];
-                const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
-                const maxSize = 50 * 1024 * 1024; // 50MB
-                
-                // Kiểm tra định dạng file
-                if (!allowedTypes.includes(fileExtension)) {
-                    showNotification(
-                        `File không đúng định dạng!\n` +
-                        `Chỉ chấp nhận: ${allowedTypes.join(', ')}\n` +
-                        `File của bạn: ${fileExtension}`,
-                        'error'
-                    );
-                    fileInput.value = '';
-                    selectedFileDiv.style.display = 'none';
-                    return;
-                }
-
-                // Kiểm tra kích thước
-                if (file.size > maxSize) {
-                    showNotification(
-                        `File quá lớn!\n` +
-                        `Kích thước tối đa: 50MB\n` +
-                        `File của bạn: ${formatFileSize(file.size)}`,
-                        'error'
-                    );
-                    fileInput.value = '';
-                    selectedFileDiv.style.display = 'none';
-                    return;
-                }
-                
-                // Hiển thị thông tin file đã chọn
-                selectedFileDiv.innerHTML = `
-                    <div style="display: flex; align-items: center; justify-content: space-between;">
-                        <div>
-                            <strong>📁 ${file.name}</strong><br>
-                            <small>📊 Kích thước: ${formatFileSize(file.size)} | 📅 ${new Date(file.lastModified).toLocaleDateString('vi-VN')}</small>
-                        </div>
-                        <button type="button" onclick="clearFile()" style="background: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;">
-                            ✕
-                        </button>
-                    </div>
-                `;
-                selectedFileDiv.style.display = 'block';
-                
-                debugLog(`File đã chọn: ${file.name} (${formatFileSize(file.size)})`);
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(messageContent).then(() => {
+                    showNotification('📋 Đã copy tin nhắn! Có thể gửi SMS/WhatsApp cho 114', 'success');
+                }).catch(() => {
+                    fallbackCopyTextToClipboard(messageContent);
+                });
             } else {
-                selectedFileDiv.style.display = 'none';
+                fallbackCopyTextToClipboard(messageContent);
             }
-            validateForm();
         }
 
-        function clearFile() {
-            document.getElementById('reportFile').value = '';
-            document.getElementById('selectedFile').style.display = 'none';
-            validateForm();
-        }
-
-        function validateForm() {
-            const schoolName = document.getElementById('schoolName')?.value.trim();
-            const fileInput = document.getElementById('reportFile');
-            const selectedReport = document.querySelector('input[name="selectedReport"]:checked');
-            const submitBtn = document.getElementById('submitBtn');
+        function fallbackCopyTextToClipboard(text) {
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            textArea.style.top = "0";
+            textArea.style.left = "0";
+            textArea.style.position = "fixed";
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
             
-            const isValid = schoolName && fileInput?.files.length > 0 && selectedReport;
-            
-            if (submitBtn) {
-                submitBtn.disabled = !isValid;
-                if (isValid) {
-                    submitBtn.innerHTML = '<span>🚀</span> Nộp Báo Cáo';
-                    submitBtn.style.opacity = '1';
-                } else {
-                    submitBtn.innerHTML = '<span>📝</span> Vui lòng điền đầy đủ thông tin';
-                    submitBtn.style.opacity = '0.6';
-                }
+            try {
+                document.execCommand('copy');
+                showNotification('📋 Đã copy tin nhắn!', 'success');
+            } catch (err) {
+                showNotification('❌ Không thể copy tự động. Hãy copy thủ công.', 'warning');
             }
             
-            return isValid;
+            document.body.removeChild(textArea);
         }
 
-        async function submitReport() {
-            if (!validateForm()) {
-                showNotification('Vui lòng điền đầy đủ thông tin trước khi nộp báo cáo!', 'warning');
+        function sendSMS() {
+            const messageContent = document.getElementById('messageContent').textContent;
+            const phoneNumber = '114';
+            
+            const smsLink = `sms:${phoneNumber}?body=${encodeURIComponent(messageContent)}`;
+            window.open(smsLink, '_blank');
+            showNotification('📱 Đã mở ứng dụng SMS để gửi cho 114', 'info');
+        }
+
+        function sendWhatsApp() {
+            const messageContent = document.getElementById('messageContent').textContent;
+            const phoneNumber = '84114';
+            
+            const whatsappLink = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(messageContent)}`;
+            window.open(whatsappLink, '_blank');
+            showNotification('💬 Đã mở WhatsApp để gửi cho 114', 'info');
+        }
+
+        function closeMessageModal() {
+            document.getElementById('messageModal').style.display = 'none';
+        }
+
+        // Control functions
+        function resetSystem() {
+            currentFloor = 0;
+            document.getElementById('buildingOverview').style.display = 'block';
+            document.getElementById('floorInstruction').style.display = 'block';
+            document.getElementById('roomsGrid').classList.remove('show');
+            
+            document.querySelectorAll('.floor-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            showNotification('Đã reset về tổng quan', 'info');
+        }
+
+        function testSystem() {
+            showNotification('Đang test hệ thống...', 'warning');
+            
+            // Simulate a test alert
+            setTimeout(() => {
+                const testRoom = {
+                    id: '207',
+                    name: 'Phòng 207 (Test)',
+                    temp: 78.5,
+                    hasHuman: true,
+                    flameDetected: true
+                };
+                showAlertPopup(testRoom);
+            }, 2000);
+        }
+
+        function exportData() {
+            if (!roomsData || Object.keys(roomsData).length === 0) {
+                showNotification('❌ Không có dữ liệu để xuất!', 'warning');
                 return;
             }
 
-            const schoolName = document.getElementById('schoolName').value.trim();
-            const fileInput = document.getElementById('reportFile');
-            const selectedReportIndex = document.querySelector('input[name="selectedReport"]:checked').value;
+            showNotification('Đang xuất dữ liệu...', 'info');
             
-            const selectedReport = reportData[selectedReportIndex];
-            const file = fileInput.files[0];
-            const [stt, tenNguoiNhan, donVi, loaiBaoCao, kiHieu] = selectedReport;
-            
-            try {
-                debugLog(`Bắt đầu nộp báo cáo: ${kiHieu}`);
+            setTimeout(() => {
+                const csvContent = "Room,Temperature,Humidity,Smoke,Flame,Status,HumanPresence,Time\n" +
+                    Object.entries(roomsData).map(([roomId, room]) => 
+                        `${roomId},${room.temperature || 0},${room.humidity || 0},${room.smokeLevel || 0},${room.flameDetected || false},${room.status},${room.humanPresence || false},${new Date().toLocaleString()}`
+                    ).join('\n');
                 
-                // Disable form
-                document.getElementById('submitBtn').disabled = true;
-                document.getElementById('submitBtn').innerHTML = '<span>⏳</span> Đang xử lý...';
+                const blob = new Blob([csvContent], { type: 'text/csv' });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `firebase_fire_data_${new Date().toISOString().slice(0,10)}.csv`;
+                a.click();
                 
-                showProgress(true);
-                
-                if (isDemoMode) {
-                    await performDemoUpload(schoolName, file, selectedReport);
-                } else {
-                    await performRealUpload(schoolName, file, selectedReport);
+                showNotification('✅ Đã xuất dữ liệu Firebase!', 'success');
+            }, 1500);
+        }
+
+        // Test functions for easy data manipulation
+        function createFireTest() {
+            if (!isConnected) {
+                showNotification('❌ Chưa kết nối Firebase!', 'warning');
+                return;
+            }
+
+            const testData = {
+                'rooms/room_207': {
+                    name: 'Phòng 207',
+                    temperature: 78.5,
+                    status: 'danger',
+                    humanPresence: true,
+                    flameDetected: true,
+                    smokeLevel: 450,
+                    humidity: 30,
+                    lastUpdate: firebase.database.ServerValue.TIMESTAMP
                 }
-                
-            } catch (error) {
-                debugLog('Lỗi nộp báo cáo: ' + error.message, 'error');
-                showNotification('Lỗi nộp báo cáo: ' + error.message, 'error');
-                
-                // Re-enable form
-                document.getElementById('submitBtn').disabled = false;
-                validateForm();
-            } finally {
-                showProgress(false);
-            }
-        }
+            };
 
-        async function performRealUpload(schoolName, file, selectedReport) {
-            const [stt, tenNguoiNhan, donVi, loaiBaoCao, kiHieu] = selectedReport;
-            const timestamp = new Date().toISOString().replace(/[-:]/g, '').slice(0, 15);
-            const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
-            const newFileName = `${schoolName}_${kiHieu}_${timestamp}${fileExtension}`;
-            
-            updateProgress(10, 'Tìm/tạo thư mục đích...');
-            debugLog(`Tìm/tạo thư mục: ${kiHieu}`);
-            const targetFolderId = await findOrCreateSubfolder(kiHieu);
-            
-            updateProgress(40, 'Đang tải file lên Google Drive...');
-            debugLog(`Upload file: ${newFileName}`);
-            await uploadFileToFolder(file, newFileName, targetFolderId);
-            
-            updateProgress(80, 'Ghi lại thông tin nộp báo cáo...');
-            debugLog('Ghi vào sheet lịch sử...');
-            await recordSubmission(currentUser.getBasicProfile().getEmail(), kiHieu, newFileName);
-            
-            updateProgress(100, 'Hoàn thành!');
-            
-            showNotification(
-                `🎉 Nộp báo cáo thành công!\n\n` +
-                `📄 File: ${newFileName}\n` +
-                `👤 Người nhận: ${tenNguoiNhan}\n` +
-                `🏢 Đơn vị: ${donVi}\n` +
-                `⏰ Thời gian: ${new Date().toLocaleString('vi-VN')}`,
-                'success'
-            );
-            
-            debugLog(`Upload thành công: ${newFileName}`, 'success');
-            
-            // Reset form và reload data
-            resetForm();
-            await loadDataFromSheets();
-        }
-
-        async function performDemoUpload(schoolName, file, selectedReport) {
-            const [stt, tenNguoiNhan, donVi, loaiBaoCao, kiHieu] = selectedReport;
-            const timestamp = new Date().toISOString().replace(/[-:]/g, '').slice(0, 15);
-            const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
-            const newFileName = `${schoolName}_${kiHieu}_${timestamp}${fileExtension}`;
-            
-            updateProgress(20, 'Demo: Mô phỏng tìm thư mục...');
-            await sleep(1000);
-            
-            updateProgress(50, 'Demo: Mô phỏng upload file...');
-            await sleep(1200);
-            
-            updateProgress(80, 'Demo: Mô phỏng ghi lịch sử...');
-            await sleep(800);
-            
-            updateProgress(100, 'Demo hoàn thành!');
-            
-            // Thêm vào lịch sử demo
-            submissionHistory.push([
-                'demo@example.com',
-                kiHieu,
-                new Date().toLocaleString('vi-VN'),
-                newFileName
-            ]);
-            
-            showNotification(
-                `🎭 Demo: Nộp báo cáo thành công!\n\n` +
-                `📄 File: ${newFileName}\n` +
-                `👤 Người nhận: ${tenNguoiNhan}\n` +
-                `🏢 Đơn vị: ${donVi}\n` +
-                `⏰ Thời gian: ${new Date().toLocaleString('vi-VN')}\n\n` +
-                `ℹ️ Đây là chế độ demo, file không được upload thực tế.`,
-                'success'
-            );
-            
-            debugLog(`Demo upload thành công: ${newFileName}`, 'success');
-            
-            // Reset form và cập nhật display
-            resetForm();
-            displayReports();
-        }
-
-        function sleep(ms) {
-            return new Promise(resolve => setTimeout(resolve, ms));
-        }
-
-        // Google Drive operations
-        async function findOrCreateSubfolder(kiHieu) {
-            const response = await gapi.client.drive.files.list({
-                q: `name='${kiHieu}' and parents in '${CONFIG.PARENT_FOLDER_ID}' and mimeType='application/vnd.google-apps.folder' and trashed=false`,
-                fields: 'files(id, name)'
-            });
-            
-            if (response.result.files.length > 0) {
-                debugLog(`Tìm thấy thư mục: ${kiHieu}`, 'success');
-                return response.result.files[0].id;
-            } else {
-                debugLog(`Tạo thư mục mới: ${kiHieu}`);
-                const createResponse = await gapi.client.drive.files.create({
-                    resource: {
-                        name: kiHieu,
-                        mimeType: 'application/vnd.google-apps.folder',
-                        parents: [CONFIG.PARENT_FOLDER_ID]
-                    },
-                    fields: 'id'
+            database.ref().update(testData)
+                .then(() => {
+                    showNotification('🔥 Test cháy phòng 207 đã tạo!', 'success');
+                })
+                .catch(error => {
+                    showNotification(`❌ Lỗi tạo test: ${error.message}`, 'danger');
                 });
-                debugLog(`Đã tạo thư mục: ${kiHieu}`, 'success');
-                return createResponse.result.id;
-            }
         }
 
-        async function uploadFileToFolder(file, fileName, folderId) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onload = async function(e) {
-                    try {
-                        const metadata = {
-                            name: fileName,
-                            parents: [folderId]
-                        };
+        function createWarningTest() {
+            if (!isConnected) {
+                showNotification('❌ Chưa kết nối Firebase!', 'warning');
+                return;
+            }
 
-                        const response = await gapi.client.request({
-                            path: 'https://www.googleapis.com/upload/drive/v3/files',
-                            method: 'POST',
-                            params: { 
-                                uploadType: 'multipart',
-                                fields: 'id,name,size,createdTime'
-                            },
-                            headers: { 
-                                'Content-Type': 'multipart/related; boundary="foo_bar_baz"' 
-                            },
-                            body: createMultipartBody(metadata, file.type, e.target.result)
-                        });
-                        
-                        debugLog(`File uploaded với ID: ${response.result.id}`, 'success');
-                        resolve(response.result);
-                    } catch (error) {
-                        debugLog(`Upload thất bại: ${error.message}`, 'error');
-                        reject(error);
-                    }
+            const testData = {
+                'rooms/room_102': {
+                    name: 'Phòng 102',
+                    temperature: 42.0,
+                    status: 'warning',
+                    humanPresence: false,
+                    flameDetected: false,
+                    smokeLevel: 280,
+                    humidity: 45,
+                    lastUpdate: firebase.database.ServerValue.TIMESTAMP
+                }
+            };
+
+            database.ref().update(testData)
+                .then(() => {
+                    showNotification('⚠️ Test cảnh báo phòng 102 đã tạo!', 'warning');
+                    // Force update chart after 1 second
+                    setTimeout(updateChart, 1000);
+                })
+                .catch(error => {
+                    showNotification(`❌ Lỗi tạo test: ${error.message}`, 'danger');
+                });
+        }
+
+        function resetAllRooms() {
+            if (!isConnected) {
+                showNotification('❌ Chưa kết nối Firebase!', 'warning');
+                return;
+            }
+
+            const safeData = {};
+            ['room_101', 'room_102', 'room_201', 'room_202', 'room_301'].forEach(roomId => {
+                safeData[`rooms/${roomId}`] = {
+                    name: roomId.replace('room_', 'Phòng '),
+                    temperature: 25.0 + Math.random() * 3,
+                    status: 'safe',
+                    humanPresence: Math.random() > 0.7,
+                    flameDetected: false,
+                    smokeLevel: 80 + Math.random() * 40,
+                    humidity: 60 + Math.random() * 15,
+                    lastUpdate: firebase.database.ServerValue.TIMESTAMP
                 };
-                reader.onerror = () => reject(new Error('Không thể đọc file'));
-                reader.readAsArrayBuffer(file);
             });
-        }
 
-        function createMultipartBody(metadata, mimeType, data) {
-            const delimiter = 'foo_bar_baz';
-            let body = `--${delimiter}\r\n`;
-            body += 'Content-Type: application/json\r\n\r\n';
-            body += JSON.stringify(metadata) + '\r\n';
-            body += `--${delimiter}\r\n`;
-            body += `Content-Type: ${mimeType}\r\n\r\n`;
-            
-            const uint8Array = new Uint8Array(data);
-            const binaryString = Array.from(uint8Array, byte => String.fromCharCode(byte)).join('');
-            body += binaryString;
-            body += `\r\n--${delimiter}--`;
-            
-            return body;
-        }
-
-        async function recordSubmission(userEmail, kiHieu, fileName) {
-            const now = new Date().toLocaleString('vi-VN');
-            
-            try {
-                await gapi.client.sheets.spreadsheets.values.append({
-                    spreadsheetId: CONFIG.SPREADSHEET_ID,
-                    range: 'LichSuNop!A:D',
-                    valueInputOption: 'RAW',
-                    insertDataOption: 'INSERT_ROWS',
-                    resource: {
-                        values: [[userEmail, kiHieu, now, fileName]]
-                    }
+            database.ref().update(safeData)
+                .then(() => {
+                    showNotification('✅ Đã reset tất cả phòng về trạng thái an toàn!', 'success');
+                })
+                .catch(error => {
+                    showNotification(`❌ Lỗi reset: ${error.message}`, 'danger');
                 });
-                debugLog('Đã ghi vào sheet lịch sử', 'success');
-            } catch (error) {
-                debugLog('Lỗi ghi sheet lịch sử: ' + error.message, 'error');
-                throw error;
-            }
         }
 
-        async function createHistorySheet() {
-            try {
-                // Tạo sheet mới
-                await gapi.client.sheets.spreadsheets.batchUpdate({
-                    spreadsheetId: CONFIG.SPREADSHEET_ID,
-                    resource: {
-                        requests: [{
-                            addSheet: {
-                                properties: { 
-                                    title: 'LichSuNop',
-                                    gridProperties: {
-                                        rowCount: 1000,
-                                        columnCount: 10
-                                    }
-                                }
-                            }
-                        }]
-                    }
-                });
-
-                // Thêm header
-                await gapi.client.sheets.spreadsheets.values.update({
-                    spreadsheetId: CONFIG.SPREADSHEET_ID,
-                    range: 'LichSuNop!A1:D1',
-                    valueInputOption: 'RAW',
-                    resource: {
-                        values: [['Email người nộp', 'Kí hiệu báo cáo', 'Ngày giờ nộp', 'Tên file']]
-                    }
-                });
-
-                debugLog('Đã tạo sheet LichSuNop', 'success');
-            } catch (error) {
-                debugLog('Lỗi tạo sheet: ' + error.message, 'error');
-                throw error;
-            }
-        }
-
-        // Utility functions
-        function showProgress(show) {
-            const container = document.getElementById('progressContainer');
-            container.style.display = show ? 'block' : 'none';
-            if (!show) updateProgress(0, '');
-        }
-
-        function updateProgress(percent, text = '') {
-            const fill = document.getElementById('progressFill');
-            const textElement = document.getElementById('progressText');
-            
-            if (fill) fill.style.width = percent + '%';
-            if (textElement) textElement.textContent = text;
+        function updateTime() {
+            const now = new Date();
+            document.getElementById('lastUpdate').textContent = now.toLocaleTimeString();
         }
 
         function showNotification(message, type) {
-            const notification = document.getElementById('notification');
-            if (notification) {
-                notification.innerHTML = message.replace(/\n/g, '<br>');
-                notification.className = `notification ${type}`;
-                notification.style.display = 'block';
-                
-                // Auto hide after delay
-                const delay = type === 'success' ? 8000 : type === 'error' ? 10000 : 5000;
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed; top: 100px; right: 30px; padding: 15px 20px;
+                border-radius: 10px; color: white; font-weight: bold; z-index: 1001;
+                animation: slideInRight 0.3s ease; max-width: 300px;
+            `;
+            
+            const colors = {
+                success: 'linear-gradient(135deg, #10b981, #059669)',
+                warning: 'linear-gradient(135deg, #f59e0b, #d97706)',
+                info: 'linear-gradient(135deg, #3b82f6, #2563eb)',
+                danger: 'linear-gradient(135deg, #ef4444, #dc2626)'
+            };
+            
+            notification.style.background = colors[type] || colors.info;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => notification.remove(), 3000);
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            updateTime();
+            setInterval(updateTime, 1000);
+            
+            // Auto-initialize Firebase with secure config
+            autoInitializeFirebase();
+            
+            // Initialize map
+            if (typeof L !== 'undefined') {
+                initMap();
                 setTimeout(() => {
-                    notification.style.display = 'none';
-                }, delay);
-
-                // Scroll to notification
-                notification.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    getCurrentLocation();
+                }, 1000);
+            } else {
+                document.getElementById('map').innerHTML = `
+                    <div style="display: flex; align-items: center; justify-content: center; height: 100%; background: rgba(255,255,255,0.1); border-radius: 15px; color: white; text-align: center; flex-direction: column;">
+                        <i class="fas fa-map-marker-alt" style="font-size: 3em; margin-bottom: 15px; color: #ef4444;"></i>
+                        <h3>Bản đồ Firebase Realtime</h3>
+                        <p>Đang tải bản đồ...</p>
+                        <small>Kết nối Firebase để xem dữ liệu thời gian thực</small>
+                    </div>
+                `;
             }
-        }
 
-        function formatFileSize(bytes) {
-            if (bytes === 0) return '0 Bytes';
-            const k = 1024;
-            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-            const i = Math.floor(Math.log(bytes) / Math.log(k));
-            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-        }
-
-        function resetForm() {
-            // Clear inputs
-            document.getElementById('schoolName').value = '';
-            document.getElementById('reportFile').value = '';
-            document.getElementById('selectedFile').style.display = 'none';
+            // Initialize chart
+            initChart();
             
-            // Uncheck radio buttons
-            document.querySelectorAll('input[name="selectedReport"]').forEach(radio => {
-                radio.checked = false;
-            });
+            showNotification('🚀 Hệ thống Fire Alarm đã sẵn sàng!', 'success');
+            showNotification('📡 Đang kết nối Firebase Database: tkb-chuong', 'info');
+        });
 
-            // Reset visual styles
-            document.querySelectorAll('.report-item').forEach(item => {
-                item.style.borderColor = '#e1e5e9';
-            });
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const roomModal = document.getElementById('roomModal');
+            const messageModal = document.getElementById('messageModal');
             
-            validateForm();
-            debugLog('Form đã được reset');
+            if (event.target === roomModal) {
+                closeModal();
+            }
+            
+            if (event.target === messageModal) {
+                closeMessageModal();
+            }
         }
     </script>
 </body>
