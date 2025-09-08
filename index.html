@@ -721,18 +721,6 @@
             animation: fireAlertPulse 2s infinite alternate;
         }
 
-        .fire-alert i {
-            color: #ef4444;
-            margin-right: 8px;
-            font-size: 1.1em;
-        }
-
-        .fire-alert span {
-            font-weight: bold;
-            display: block;
-            margin-bottom: 4px;
-        }
-
         .fire-alert small {
             opacity: 0.8;
             font-size: 0.85em;
@@ -1546,15 +1534,32 @@
         // Chart variable
         let temperatureChart;
 
-        // Hàm trợ giúp để tính toán trạng thái dựa trên nhiệt độ
-        function getStatusByTemperature(temp) {
-            if (temp > 45) {
-                return 'danger';
-            } else if (temp >= 40 && temp <= 45) {
-                return 'warning';
-            } else {
-                return 'safe';
+        // Hàm trợ giúp để tính toán trạng thái tổng thể từ tất cả các cảm biến
+        function getOverallStatus(roomData) {
+            if (!roomData || roomData.temperature === undefined) {
+                return 'offline'; // Trả về offline nếu không có dữ liệu
             }
+
+            const temp = roomData.temperature;
+            const smoke = roomData.smokeLevel;
+            const flame = roomData.flameDetected;
+            const DANGER_TEMP = 45;
+            const WARNING_TEMP = 40;
+            const DANGER_SMOKE = 750;
+            const WARNING_SMOKE = 500;
+
+            // Ưu tiên cao nhất: Phát hiện lửa hoặc nhiệt độ nguy hiểm
+            if (flame || temp > DANGER_TEMP) {
+                return 'danger';
+            }
+
+            // Ưu tiên thứ hai: Nhiệt độ hoặc khói ở mức cảnh báo
+            if ((temp >= WARNING_TEMP && temp <= DANGER_TEMP) || (smoke && smoke > WARNING_SMOKE)) {
+                return 'warning';
+            }
+
+            // Mức độ an toàn nếu không có cảnh báo nào được kích hoạt
+            return 'safe';
         }
 
         // Auto-initialize Firebase on page load
@@ -1671,7 +1676,6 @@
 
         // Update floor tabs based on room statuses
         function updateFloorTabs() {
-            // Map Firebase rooms to floors
             const floorMapping = {
                 1: ['room_101', 'room_102', 'room_103', 'room_104', 'room_105', 'room_106', 'room_107', 'room_108'],
                 2: ['room_201', 'room_202', 'room_203', 'room_204', 'room_205', 'room_206', 'room_207', 'room_208'],
@@ -1682,16 +1686,13 @@
                 const tab = document.getElementById(`floor${floor}Tab`);
                 if (!tab) continue;
 
-                // Remove existing status classes
                 tab.classList.remove('floor-safe', 'floor-warning', 'floor-danger');
                 
-                // Remove existing alert badge
                 const existingBadge = tab.querySelector('.floor-alert-badge');
                 if (existingBadge) {
                     existingBadge.remove();
                 }
 
-                // Check rooms in this floor
                 let hasDanger = false;
                 let hasWarning = false;
 
@@ -1699,13 +1700,12 @@
                 floorRooms.forEach(roomId => {
                     const room = roomsData[roomId];
                     if (room) {
-                        const calculatedStatus = getStatusByTemperature(room.temperature);
+                        const calculatedStatus = getOverallStatus(room);
                         if (calculatedStatus === 'danger') hasDanger = true;
                         else if (calculatedStatus === 'warning') hasWarning = true;
                     }
                 });
 
-                // Apply appropriate status
                 if (hasDanger) {
                     tab.classList.add('floor-danger');
                     tab.innerHTML += '<div class="floor-alert-badge"></div>';
@@ -1723,7 +1723,7 @@
             let safe = 0, warning = 0, danger = 0, offline = 0;
 
             Object.values(roomsData).forEach(room => {
-                const calculatedStatus = getStatusByTemperature(room.temperature);
+                const calculatedStatus = getOverallStatus(room);
                 switch(calculatedStatus) {
                     case 'safe': safe++; break;
                     case 'warning': warning++; break;
@@ -1768,9 +1768,8 @@
             const dangerRooms = [];
             
             Object.entries(roomsData).forEach(([roomId, room]) => {
-                const calculatedStatus = getStatusByTemperature(room.temperature);
+                const calculatedStatus = getOverallStatus(room);
                 if (calculatedStatus === 'danger') {
-                    // Extract room number from Firebase ID (room_201 -> 201)
                     const roomNumber = roomId.replace('room_', '');
                     
                     dangerRooms.push({
@@ -1818,9 +1817,8 @@
 
             const dangerRooms = [];
             Object.entries(roomsData).forEach(([roomId, room]) => {
-                const calculatedStatus = getStatusByTemperature(room.temperature);
+                const calculatedStatus = getOverallStatus(room);
                 if (calculatedStatus === 'danger' || calculatedStatus === 'warning') {
-                    // Extract room number from Firebase ID (room_201 -> 201)
                     const roomNumber = roomId.replace('room_', '');
                     const floor = Math.floor(parseInt(roomNumber) / 100);
                     
@@ -1865,7 +1863,6 @@
         function updateMap() {
             if (!map) return;
 
-            // Clear existing fire markers
             fireMarkers.forEach(markerObj => {
                 if (markerObj.marker) {
                     map.removeLayer(markerObj.marker);
@@ -1873,15 +1870,12 @@
             });
             fireMarkers = [];
 
-            // Add new fire markers from Firebase data
             Object.entries(roomsData).forEach(([roomId, room]) => {
-                const calculatedStatus = getStatusByTemperature(room.temperature);
+                const calculatedStatus = getOverallStatus(room);
                 if (calculatedStatus === 'danger' || calculatedStatus === 'warning') {
-                    // Extract room number from Firebase ID (room_201 -> 201)
                     const roomNumber = roomId.replace('room_', '');
                     const floor = Math.floor(parseInt(roomNumber) / 100);
                     
-                    // Simple offset around building center
                     const offsetLat = (Math.random() - 0.5) * 0.002;
                     const offsetLng = (Math.random() - 0.5) * 0.002;
                     
@@ -1905,16 +1899,13 @@
 
         // Initialize Leaflet Map
         function initMap() {
-            // Create map with OpenStreetMap tiles
             map = L.map('map').setView([buildingLocation.lat, buildingLocation.lng], 16);
 
-            // Add OpenStreetMap tiles (FREE!)
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
                 maxZoom: 19
             }).addTo(map);
 
-            // Add building marker with soft Google Maps style
             const buildingIcon = L.divIcon({
                 html: `
                     <div style="
@@ -1970,7 +1961,6 @@
         }
 
         function addFireMarker(fire) {
-            // Create soft Google Maps style fire marker
             const fireIcon = L.divIcon({
                 html: `
                     <div style="
@@ -2030,11 +2020,9 @@
                     </div>
                 `);
 
-            // Store marker
             fireMarkers.push({ marker });
         }
 
-        // Map control functions
         function getCurrentLocation() {
             if (!navigator.geolocation) {
                 showNotification('Trình duyệt không hỗ trợ GPS', 'warning');
@@ -2058,7 +2046,6 @@
                             map.removeLayer(buildingMarker);
                         }
                         
-                        // Create soft Google Maps style emergency marker
                         const buildingIcon = L.divIcon({
                             html: `
                                 <div style="
@@ -2146,7 +2133,6 @@
         function showFireRoute() {
             const fireStationLocation = { lat: 10.7700, lng: 106.6950 };
             
-            // Create soft Google Maps style fire station marker
             const fireStationIcon = L.divIcon({
                 html: `
                     <div style="
@@ -2213,7 +2199,6 @@
                 map.closePopup();
             }
             
-            // Extract room number from Firebase ID (room_201 -> 201)
             const displayRoomNumber = roomNumber.replace('room_', '');
             const floor = Math.floor(parseInt(displayRoomNumber) / 100);
             
@@ -2229,7 +2214,6 @@
             showNotification(`Đang chuyển đến phòng ${displayRoomNumber}`, 'info');
         }
 
-        // Initialize chart
         function initChart() {
             const ctx = document.getElementById('temperatureChart').getContext('2d');
             
@@ -2239,7 +2223,7 @@
                     labels: ['10 phút trước', '8 phút trước', '6 phút trước', '4 phút trước', '2 phút trước', 'Hiện tại'],
                     datasets: [{
                         label: 'Nhiệt độ TB',
-                        data: [25, 26, 28, 32, 35, 25], // Dữ liệu mặc định
+                        data: [25, 26, 28, 32, 35, 25],
                         borderColor: '#ef4444',
                         backgroundColor: 'rgba(239, 68, 68, 0.1)',
                         tension: 0.4,
@@ -2295,7 +2279,6 @@
                 }
             });
 
-            // Start updating chart every 10 seconds
             setInterval(updateChart, 10000);
         }
 
@@ -2310,7 +2293,6 @@
                 minute: '2-digit' 
             });
             
-            // Calculate average temperature from Firebase data
             const temperatures = [];
             Object.values(roomsData).forEach(room => {
                 if (room.temperature && typeof room.temperature === 'number') {
@@ -2318,33 +2300,29 @@
                 }
             });
 
-            // If no data, use default
             let avgTemp = 25;
             if (temperatures.length > 0) {
                 avgTemp = temperatures.reduce((sum, temp) => sum + temp, 0) / temperatures.length;
             }
 
-            // Update chart data - round to 1 decimal place
             const data = temperatureChart.data;
             data.labels.push(timeLabel);
-            data.datasets[0].data.push(Math.round(avgTemp * 10) / 10); // Round to 1 decimal
+            data.datasets[0].data.push(Math.round(avgTemp * 10) / 10);
 
-            // Keep only last 10 data points
             if (data.labels.length > 10) {
                 data.labels.shift();
                 data.datasets[0].data.shift();
             }
 
-            // Update chart color based on temperature
-            const color = getStatusByTemperature(avgTemp) === 'danger' ? '#ef4444' : getStatusByTemperature(avgTemp) === 'warning' ? '#f59e0b' : '#4ade80';
+            const status = getOverallStatus({ temperature: avgTemp });
+            const color = status === 'danger' ? '#ef4444' : status === 'warning' ? '#f59e0b' : '#4ade80';
             data.datasets[0].borderColor = color;
             data.datasets[0].backgroundColor = color.replace(')', ', 0.1)').replace('rgb', 'rgba');
             data.datasets[0].pointBackgroundColor = color;
 
-            temperatureChart.update('none'); // No animation for performance
+            temperatureChart.update('none');
         }
 
-        // Show floor rooms
         function showFloor(floor) {
             currentFloor = floor;
             
@@ -2364,7 +2342,6 @@
             const grid = document.getElementById('roomsGrid');
             grid.innerHTML = '';
             
-            // Map Firebase room IDs to floor layout
             const roomMapping = {
                 1: ['room_101', 'room_102', 'room_103', 'room_104', 'room_105', 'room_106', 'room_107', 'room_108'],
                 2: ['room_201', 'room_202', 'room_203', 'room_204', 'room_205', 'room_206', 'room_207', 'room_208'],
@@ -2377,14 +2354,12 @@
                 const firebaseRoomId = floorRooms[i];
                 const displayRoomId = `${floor}0${i + 1}`;
                 
-                // Get room data from Firebase
                 const room = firebaseRoomId && roomsData[firebaseRoomId] ? roomsData[firebaseRoomId] : {
                     temperature: 25,
                     online: false
                 };
 
-                // Tính toán trạng thái dựa trên ngưỡng nhiệt độ
-                const calculatedStatus = getStatusByTemperature(room.temperature);
+                const calculatedStatus = getOverallStatus(room);
 
                 const roomElement = document.createElement('div');
                 roomElement.className = `room-square room-${calculatedStatus}`;
@@ -2400,14 +2375,12 @@
             }
         }
 
-        // Global variable to track current modal room
         let currentModalRoom = null;
 
         function openRoomModal(displayRoomId, room, firebaseRoomId) {
             const modal = document.getElementById('roomModal');
-            currentModalRoom = firebaseRoomId; // Store for real-time updates
+            currentModalRoom = firebaseRoomId;
             
-            // Initial render
             updateModalContent(displayRoomId, room, firebaseRoomId);
             modal.style.display = 'block';
         }
@@ -2417,15 +2390,12 @@
             const status = document.getElementById('modalStatus');
             const details = document.getElementById('sensorDetails');
             
-            // Get real-time data from Firebase if available
             const currentRoom = firebaseRoomId && roomsData[firebaseRoomId] ? roomsData[firebaseRoomId] : room;
             
             title.textContent = `${currentRoom.name || `Phòng ${displayRoomId}`}`;
             
-            // Tính toán lại trạng thái dựa trên nhiệt độ mới
-            const calculatedStatus = getStatusByTemperature(currentRoom.temperature);
+            const calculatedStatus = getOverallStatus(currentRoom);
 
-            // Cập nhật status badge với trạng thái mới
             status.className = `status-badge badge-${calculatedStatus}`;
             let statusText = '';
             let statusIcon = '';
@@ -2451,7 +2421,6 @@
             
             status.innerHTML = `<i class="${statusIcon}"></i><span>${statusText}</span>`;
             
-            // Generate sensor details with real-time data
             let detailsHTML = `
                 <div class="sensor-detail">
                     <div class="sensor-detail-value">${currentRoom.temperature ? Math.round(currentRoom.temperature * 10) / 10 : '25.0'}°C</div>
@@ -2474,7 +2443,6 @@
                 </div>
             `;
             
-            // Show human presence for danger/warning
             if (calculatedStatus === 'danger' || calculatedStatus === 'warning') {
                 detailsHTML += `
                     <div class="sensor-detail">
@@ -2491,7 +2459,6 @@
                 `;
             }
             
-            // Show Firebase connection status
             if (firebaseRoomId) {
                 detailsHTML += `
                     <div class="sensor-detail firebase-info">
@@ -2517,10 +2484,9 @@
 
         function closeModal() {
             document.getElementById('roomModal').style.display = 'none';
-            currentModalRoom = null; // Clear tracking
+            currentModalRoom = null;
         }
 
-        // Emergency call functions
         function callEmergency(type) {
             const statusElement = document.getElementById(`${type}Status`);
             const messages = {
@@ -2557,10 +2523,9 @@
             const locationInfo = document.getElementById('buildingLocation').textContent;
             const currentUrl = window.location.href;
             
-            // Get current fire alerts from Firebase data
             const fireAlerts = [];
             Object.entries(roomsData).forEach(([roomId, room]) => {
-                const calculatedStatus = getStatusByTemperature(room.temperature);
+                const calculatedStatus = getOverallStatus(room);
                 if (calculatedStatus === 'danger') {
                     const roomNumber = roomId.replace('room_', '');
                     const floor = Math.floor(parseInt(roomNumber) / 100);
@@ -2663,7 +2628,6 @@ Liên hệ: [SĐT trung tâm báo cháy]`;
             document.getElementById('messageModal').style.display = 'none';
         }
 
-        // Control functions
         function resetSystem() {
             currentFloor = 0;
             document.getElementById('buildingOverview').style.display = 'block';
@@ -2680,7 +2644,6 @@ Liên hệ: [SĐT trung tâm báo cháy]`;
         function testSystem() {
             showNotification('Đang test hệ thống...', 'warning');
             
-            // Simulate a test alert
             setTimeout(() => {
                 const testRoom = {
                     id: '207',
@@ -2704,7 +2667,7 @@ Liên hệ: [SĐT trung tâm báo cháy]`;
             setTimeout(() => {
                 const csvContent = "Room,Temperature,Humidity,Smoke,Flame,Status,HumanPresence,Time\n" +
                     Object.entries(roomsData).map(([roomId, room]) => 
-                        `${roomId},${room.temperature || 0},${room.humidity || 0},${room.smokeLevel || 0},${room.flameDetected || false},${getStatusByTemperature(room.temperature)},${room.humanPresence || false},${new Date().toLocaleString()}`
+                        `${roomId},${room.temperature || 0},${room.humidity || 0},${room.smokeLevel || 0},${room.flameDetected || false},${getOverallStatus(room)},${room.humanPresence || false},${new Date().toLocaleString()}`
                     ).join('\n');
                 
                 const blob = new Blob([csvContent], { type: 'text/csv' });
@@ -2718,7 +2681,6 @@ Liên hệ: [SĐT trung tâm báo cháy]`;
             }, 1500);
         }
 
-        // Test functions for easy data manipulation
         function createFireTest() {
             if (!isConnected) {
                 showNotification('❌ Chưa kết nối Firebase!', 'warning');
@@ -2728,7 +2690,7 @@ Liên hệ: [SĐT trung tâm báo cháy]`;
             const testData = {
                 'rooms/room_207': {
                     name: 'Phòng 207',
-                    temperature: 47.5, // Changed to match new danger threshold
+                    temperature: 47.5,
                     humanPresence: true,
                     flameDetected: true,
                     smokeLevel: 450,
@@ -2755,7 +2717,7 @@ Liên hệ: [SĐT trung tâm báo cháy]`;
             const testData = {
                 'rooms/room_102': {
                     name: 'Phòng 102',
-                    temperature: 42.0, // This value is in the new warning range
+                    temperature: 42.0,
                     humanPresence: false,
                     flameDetected: false,
                     smokeLevel: 280,
@@ -2767,7 +2729,6 @@ Liên hệ: [SĐT trung tâm báo cháy]`;
             database.ref().update(testData)
                 .then(() => {
                     showNotification('⚠️ Test cảnh báo phòng 102 đã tạo!', 'warning');
-                    // Force update chart after 1 second
                     setTimeout(updateChart, 1000);
                 })
                 .catch(error => {
@@ -2830,15 +2791,12 @@ Liên hệ: [SĐT trung tâm báo cháy]`;
             setTimeout(() => notification.remove(), 3000);
         }
 
-        // Initialize page
         document.addEventListener('DOMContentLoaded', function() {
             updateTime();
             setInterval(updateTime, 1000);
             
-            // Auto-initialize Firebase with secure config
             autoInitializeFirebase();
             
-            // Initialize map
             if (typeof L !== 'undefined') {
                 initMap();
                 setTimeout(() => {
@@ -2855,14 +2813,12 @@ Liên hệ: [SĐT trung tâm báo cháy]`;
                 `;
             }
 
-            // Initialize chart
             initChart();
             
             showNotification('🚀 Hệ thống Fire Alarm đã sẵn sàng!', 'success');
             showNotification('📡 Đang kết nối Firebase Database: tkb-chuong', 'info');
         });
 
-        // Close modal when clicking outside
         window.onclick = function(event) {
             const roomModal = document.getElementById('roomModal');
             const messageModal = document.getElementById('messageModal');
