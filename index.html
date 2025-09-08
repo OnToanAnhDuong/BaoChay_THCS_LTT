@@ -1545,16 +1545,18 @@
             const flame = roomData.flameDetected;
             const DANGER_TEMP = 45;
             const WARNING_TEMP = 40;
-            const DANGER_SMOKE = 550;
-            const WARNING_SMOKE = 300;
+            const DANGER_SMOKE = 850;
+            const WARNING_SMOKE = 500;
 
             // Ưu tiên cao nhất: Phát hiện lửa hoặc nhiệt độ nguy hiểm
             if (flame || temp > DANGER_TEMP) {
                 return 'danger';
             }
-
+            if (flame || smoke > DANGER_SMOKE) {
+                return 'danger';
+            }
             // Ưu tiên thứ hai: Nhiệt độ hoặc khói ở mức cảnh báo
-            if ((temp >= WARNING_TEMP && temp <= DANGER_TEMP) || (smoke && smoke > WARNING_SMOKE)) {
+            if ((temp >= WARNING_TEMP && temp <= DANGER_TEMP) || (smoke >= WARNING_SMOKE && smoke <DANGER_SMOKE)) {
                 return 'warning';
             }
 
@@ -2834,4 +2836,3 @@ Liên hệ: [SĐT trung tâm báo cháy]`;
     </script>
 </body>
 </html>
-
